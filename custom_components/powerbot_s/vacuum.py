@@ -14,7 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, CONF_DEVICE_ID
+from .const import DOMAIN, CONF_DEVICE_ID, FAN_LEVEL_MAP, FAN_SPEEDS
 from .coordinator import PowerBotDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -32,10 +32,6 @@ _LOGGER = logging.getLogger(__name__)
 #
 # Commands are sent via POST /devices/commands/{deviceId}
 # body: {"data": "<hex_string>", "waitTimeoutInSeconds": 30}
-#
-# NOTE: CRC values were computed from the APK algorithm.
-# If commands do not work for your firmware, capture real traffic with
-# mitmproxy and update these constants (see README.md for instructions).
 # ─────────────────────────────────────────────────────────────────────────────────
 
 # ── Cleaning mode commands ────────────────────────────────────────────
@@ -51,13 +47,6 @@ HEX_FAN_NORMAL       = "AA0EB800000000000001350201010200FE"  # Normal
 HEX_FAN_STRONG       = "AA0EB800000000000001350201010300FD"  # Strong / Max
 
 # ── State mapping from API → HA VacuumActivity ───────────────────────────────────────
-# Real values observed from /shadow/device/state on VR7700 class devices:
-#   "charging_finish" = fully charged and docked
-#   "charging"        = charging in dock
-#   "cleaning"        = active cleaning
-#   "paused"          = paused mid-clean
-#   "going_home"      = returning to dock
-#   "idle" / "standby" = idle off dock
 _STATE_MAP: dict[str, VacuumActivity] = {
     "cleaning":        VacuumActivity.CLEANING,
     "sweeping":        VacuumActivity.CLEANING,
@@ -77,10 +66,6 @@ _STATE_MAP: dict[str, VacuumActivity] = {
     "error":           VacuumActivity.ERROR,
     "fault":           VacuumActivity.ERROR,
 }
-
-# Fan speeds: API "fanLevel" returns "1", "2", "3"
-_FAN_LEVEL_MAP: dict[str, str] = {"1": "quiet", "2": "normal", "3": "strong"}
-FAN_SPEEDS = ["quiet", "normal", "strong"]
 
 
 async def async_setup_entry(
@@ -148,12 +133,9 @@ class PowerBotVacuum(CoordinatorEntity[PowerBotDataUpdateCoordinator], StateVacu
 
     @property
     def fan_speed(self) -> str | None:
-        """Return current fan speed.
-
-        API returns "fanLevel" as "1" (quiet), "2" (normal), "3" (strong).
-        """
+        """Return current fan speed."""
         level = str(self.coordinator.data.get("fanLevel", "2"))
-        return _FAN_LEVEL_MAP.get(level, "normal")
+        return FAN_LEVEL_MAP.get(level, "normal")
 
     async def _send_hex(self, hex_data: str) -> None:
         """Send a hex command to the robot and request a state refresh."""
@@ -185,16 +167,9 @@ class PowerBotVacuum(CoordinatorEntity[PowerBotDataUpdateCoordinator], StateVacu
         await self._send_hex(HEX_SPOT_CLEAN)
 
     async def async_locate(self, **kwargs: Any) -> None:
-        """Locate the robot (plays sound — reuses spot-clean signal as beep).
-
-        Note: there is no dedicated locate command in the mzrobo API.
-        The spot-clean command is used as a workaround; the robot will
-        start cleaning briefly.  If your firmware version adds a locate
-        command, replace HEX_SPOT_CLEAN with the correct hex here.
-        """
+        """Locate the robot (no dedicated locate in mzrobo API; triggers spot-clean)."""
         _LOGGER.debug(
-            "Locate requested — no dedicated locate command in mzrobo API; "
-            "triggering spot-clean as workaround"
+            "Locate requested — no dedicated locate command; triggering spot-clean"
         )
         await self._send_hex(HEX_SPOT_CLEAN)
 
