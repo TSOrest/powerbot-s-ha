@@ -10,9 +10,9 @@ from homeassistant.components.vacuum import (
     VacuumActivity,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistanth
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.update_coordinator import CoordinatorEntityh
 
 from .const import DOMAIN, CONF_DEVICE_ID, FAN_LEVEL_MAP, FAN_SPEEDS
 from .coordinator import PowerBotDataUpdateCoordinator
@@ -89,13 +89,12 @@ class PowerBotVacuum(CoordinatorEntity[PowerBotDataUpdateCoordinator], StateVacu
         | VacuumEntityFeature.STOP
         | VacuumEntityFeature.PAUSE
         | VacuumEntityFeature.RETURN_HOME
-        | VacuumEntityFeature.BATTERY
+
         | VacuumEntityFeature.STATE
         | VacuumEntityFeature.FAN_SPEED
         | VacuumEntityFeature.CLEAN_SPOT
         | VacuumEntityFeature.LOCATE
-    )
-
+    
     def __init__(
         self,
         coordinator: PowerBotDataUpdateCoordinator,
