@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "POWERbot-S — Вхід",
+        "description": "Введіть дані від акаунту в додатку POWERbot-S.",
+        "data": {
+          "email": "Email",
+          "password": "Пароль"
+        }
+      },
+      "device_id": {
+        "title": "Device ID пристрою",
+        "description": "Введіть Device ID вашого робота-пилососа. Знайдіть його в додатку POWERbot-S: Налаштування → Інформація про пристрій. Приклад: {hint}",
+        "data": {
+          "device_id": "Device ID"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Невірний email або пароль.",
+      "cannot_connect": "Не вдалося підключитися до сервера або знайти пристрій. Перевірте Device ID та з’єднання з інтернетом.",
+      "no_devices": "Пристроїв на цьому акаунті не знайдено.",
+      "unknown": "Неочікувана помилка. Перевірте журнал подій."
+    },
+    "abort": {
+      "already_configured": "Цей пристрій вже налаштований."
+    }
+  }
+}
