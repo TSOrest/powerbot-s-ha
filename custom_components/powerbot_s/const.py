@@ -39,3 +39,8 @@ ROBOT_STATE_ERROR     = "error"
 ATTR_BATTERY_LEVEL = "battery_level"
 ATTR_STATUS        = "status"
 ATTR_FAN_SPEED     = "fan_speed"
+
+# Fan speed mapping: API "fanLevel" value → human-readable label
+# Used by both vacuum.py and sensor.py (defined here to avoid circular imports)
+FAN_LEVEL_MAP: dict[str, str] = {"1": "quiet", "2": "normal", "3": "strong"}
+FAN_SPEEDS = ["quiet", "normal", "strong"]
