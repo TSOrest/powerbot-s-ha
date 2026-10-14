@@ -1,0 +1,54 @@
+name: Bug report
+description: Report a problem with the POWERbot-S integration
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Before submitting**, check existing issues and make sure you have the latest version installed.
+
+  - type: input
+    id: ha_version
+    attributes:
+      label: Home Assistant version
+      placeholder: "e.g. 2024.6.0"
+    validations:
+      required: true
+
+  - type: input
+    id: integration_version
+    attributes:
+      label: Integration version
+      placeholder: "e.g. 1.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: robot_model
+    attributes:
+      label: Robot model
+      placeholder: "e.g. Samsung VR7700 / POWERbot-S"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: What happened? What did you expect?
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Debug logs
+      description: |
+        Enable debug logging and paste relevant logs here.
+        Add to `configuration.yaml`:
+        ```yaml
+        logger:
+          logs:
+            custom_components.powerbot_s: debug
+        ```
+      render: text
