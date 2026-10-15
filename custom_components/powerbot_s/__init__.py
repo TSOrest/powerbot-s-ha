@@ -14,9 +14,11 @@ from .coordinator import PowerBotConfigEntry, PowerBotDataUpdateCoordinator
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
+    Platform.NUMBER,
     Platform.SELECT,
     Platform.SENSOR,
     Platform.SWITCH,
+    Platform.TIME,
     Platform.VACUUM,
 ]
 

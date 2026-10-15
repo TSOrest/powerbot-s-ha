@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import time
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -9,6 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
+from . import protocol
 from .api import (
     PowerBotApiClient,
     PowerBotApiError,
@@ -58,6 +60,10 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         # Last values set from Home Assistant, used when the cloud state lacks them
         self.last_water: str = DEFAULT_WATER
         self.carpet_mode: bool | None = None
+        self.volume: int | None = None
+        self.dnd_enabled: bool | None = None
+        self.dnd_start = time(22, 0)
+        self.dnd_end = time(8, 0)
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:
@@ -87,6 +93,23 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         fan = fan or self.fan_speed or DEFAULT_FAN
         water = water or self.water_level
         return FAN_LEVELS[fan], WATER_LEVELS[water]
+
+    async def async_set_dnd(
+        self,
+        enabled: bool | None = None,
+        start: time | None = None,
+        end: time | None = None,
+    ) -> None:
+        """Send the do-not-disturb setting, keeping the parts not given."""
+        enabled = self.dnd_enabled if enabled is None else enabled
+        start = start or self.dnd_start
+        end = end or self.dnd_end
+        await self.async_send(
+            protocol.do_not_disturb(
+                bool(enabled), (start.hour, start.minute), (end.hour, end.minute)
+            )
+        )
+        self.dnd_enabled, self.dnd_start, self.dnd_end = bool(enabled), start, end
 
     async def async_send(self, frame: str) -> None:
         """Send a command frame and refresh the state."""

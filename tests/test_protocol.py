@@ -21,6 +21,9 @@ WATER = {"off": 0, "low": 1, "normal": 2, "high": 3}
         (protocol.set_suction(3, WATER["low"]), "AA10B8000000000000022204030001010B"),
         (protocol.carpet_mode(False), "AA0DB800000000000002220C000B"),
         (protocol.carpet_mode(True), "AA0DB800000000000002220C010A"),
+        (protocol.locate(), "AA11B80000000000000335070000000000F8"),
+        (protocol.volume(50), "AA0DB800000000000002220A32DB"),
+        (protocol.do_not_disturb(True, (22, 0), (8, 0)), "AA11B80000000000000222060116000800EE"),
     ],
 )
 def test_frames(frame: str, expected: str) -> None:

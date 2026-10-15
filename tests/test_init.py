@@ -96,3 +96,39 @@ async def test_paused_start_resumes(hass: HomeAssistant, mock_api) -> None:
     await hass.async_block_till_done()
     await hass.services.async_call("vacuum", "start", {"entity_id": "vacuum.kitchen"}, blocking=True)
     mock_api["send"].assert_awaited_with("111", protocol.resume(), wait_timeout=15)
+
+
+async def test_locate_volume_and_do_not_disturb(hass: HomeAssistant, mock_api) -> None:
+    entry = _entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    send = mock_api["send"]
+
+    await hass.services.async_call("vacuum", "locate", {"entity_id": "vacuum.kitchen"}, blocking=True)
+    send.assert_awaited_with("111", protocol.locate(), wait_timeout=15)
+
+    await hass.services.async_call(
+        "number", "set_value", {"entity_id": "number.kitchen_volume", "value": 40}, blocking=True
+    )
+    send.assert_awaited_with("111", protocol.volume(40), wait_timeout=15)
+    assert hass.states.get("number.kitchen_volume").state == "40"
+
+    # While do not disturb is off, a new start time is only stored
+    send.reset_mock()
+    await hass.services.async_call(
+        "time", "set_value", {"entity_id": "time.kitchen_do_not_disturb_start", "time": "23:30:00"}, blocking=True
+    )
+    send.assert_not_awaited()
+    assert hass.states.get("time.kitchen_do_not_disturb_start").state == "23:30:00"
+
+    await hass.services.async_call(
+        "switch", "turn_on", {"entity_id": "switch.kitchen_do_not_disturb"}, blocking=True
+    )
+    send.assert_awaited_with("111", protocol.do_not_disturb(True, (23, 30), (8, 0)), wait_timeout=15)
+    assert hass.states.get("switch.kitchen_do_not_disturb").state == "on"
+
+    # While it is on, changing a time is sent right away
+    await hass.services.async_call(
+        "time", "set_value", {"entity_id": "time.kitchen_do_not_disturb_end", "time": "07:00:00"}, blocking=True
+    )
+    send.assert_awaited_with("111", protocol.do_not_disturb(True, (23, 30), (7, 0)), wait_timeout=15)

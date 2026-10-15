@@ -10,6 +10,7 @@ from __future__ import annotations
 
 _DEVICE_TYPE = 0xB8
 _MSG_CONTROL = 0x02
+_MSG_QUERY = 0x03
 _CONTROL = 0x22
 
 _START = 0x02
@@ -19,6 +20,10 @@ _PAUSE = 0x1B
 _CONTINUE = 0x1C
 _SET_SUCTION = 0x04
 _CARPET = 0x0C
+_DND = 0x06
+_VOLUME = 0x0A
+
+_LOCATE = bytes([0x35, 0x07, 0, 0, 0, 0, 0])
 
 _WORK_MODE_AUTO = 0x08
 
@@ -59,3 +64,18 @@ def set_suction(fan: int, water: int) -> str:
 
 def carpet_mode(enabled: bool) -> str:
     return build_frame(bytes([_CONTROL, _CARPET, int(enabled)]))
+
+
+def locate() -> str:
+    """Make the robot play a sound so it can be found."""
+    return build_frame(_LOCATE, msg_type=_MSG_QUERY)
+
+
+def volume(level: int) -> str:
+    """Set the voice volume, 0-100."""
+    return build_frame(bytes([_CONTROL, _VOLUME, level]))
+
+
+def do_not_disturb(enabled: bool, start: tuple[int, int], end: tuple[int, int]) -> str:
+    """Turn do-not-disturb on or off for the period start-end, as (hour, minute)."""
+    return build_frame(bytes([_CONTROL, _DND, int(enabled), *start, *end]))

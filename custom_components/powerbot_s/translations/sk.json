@@ -105,6 +105,22 @@
     "switch": {
       "carpet_mode": {
         "name": "Režim koberca"
+      },
+      "do_not_disturb": {
+        "name": "Nerušiť"
+      }
+    },
+    "number": {
+      "volume": {
+        "name": "Hlasitosť"
+      }
+    },
+    "time": {
+      "dnd_start": {
+        "name": "Začiatok Nerušiť"
+      },
+      "dnd_end": {
+        "name": "Koniec Nerušiť"
       }
     }
   }

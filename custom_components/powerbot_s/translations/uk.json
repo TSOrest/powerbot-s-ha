@@ -105,6 +105,22 @@
     "switch": {
       "carpet_mode": {
         "name": "Режим килима"
+      },
+      "do_not_disturb": {
+        "name": "Не турбувати"
+      }
+    },
+    "number": {
+      "volume": {
+        "name": "Гучність"
+      }
+    },
+    "time": {
+      "dnd_start": {
+        "name": "Початок «Не турбувати»"
+      },
+      "dnd_end": {
+        "name": "Кінець «Не турбувати»"
       }
     }
   }

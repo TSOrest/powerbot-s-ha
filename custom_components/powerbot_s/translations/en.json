@@ -105,6 +105,22 @@
     "switch": {
       "carpet_mode": {
         "name": "Carpet mode"
+      },
+      "do_not_disturb": {
+        "name": "Do not disturb"
+      }
+    },
+    "number": {
+      "volume": {
+        "name": "Volume"
+      }
+    },
+    "time": {
+      "dnd_start": {
+        "name": "Do not disturb start"
+      },
+      "dnd_end": {
+        "name": "Do not disturb end"
       }
     }
   }
