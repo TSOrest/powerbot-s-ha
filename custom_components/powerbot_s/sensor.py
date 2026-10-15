@@ -15,7 +15,7 @@ from homeassistant.const import PERCENTAGE, EntityCategory, UnitOfArea, UnitOfTi
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .const import CONSUMABLES, FAN_SPEEDS, WORK_MODES
+from .const import CONSUMABLES, FAN_SPEEDS, FAULT_OPTIONS, WORK_MODES, fault_key
 from .coordinator import PowerBotConfigEntry, PowerBotDataUpdateCoordinator
 from .entity import PowerBotEntity
 
@@ -89,11 +89,20 @@ SENSORS: tuple[PowerBotSensorDescription, ...] = (
         value_fn=lambda c: c.work.work_time if c.work else None,
     ),
     PowerBotSensorDescription(
+        key="robot_error",
+        translation_key="robot_error",
+        device_class=SensorDeviceClass.ENUM,
+        options=FAULT_OPTIONS,
+        robot=True,
+        value_fn=lambda c: fault_key(c.work.fault_class, c.work.fault_code) if c.work else None,
+    ),
+    PowerBotSensorDescription(
         key="error_code",
         translation_key="error_code",
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
         robot=True,
-        value_fn=lambda c: (c.work.fault_class * 100 + c.work.fault_code) if c.work else None,
+        value_fn=lambda c: f"{c.work.fault_class}.{c.work.fault_code}" if c.work else None,
     ),
     *(
         PowerBotSensorDescription(

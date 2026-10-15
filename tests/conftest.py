@@ -14,6 +14,8 @@ REPLIES = {
     protocol.query_work_state(): "aa30b800000000000103320106000200080100036301630001000001010001010100000100000201d1030a00000000001e",
     protocol.query_dnd(): "aa11b80000000000000332050116000800de",
     protocol.query_voice(): "aa0cb800000000000103368082",
+    # One schedule: every day 10:00, 30 min, whole house, normal/normal, task 1, off
+    protocol.query_schedules(): "aa2ab800000000000003340100ff0a001e08020201010000000000000000000000000000000000000000b1",
 }
 VOICES = [
     {"id": 35, "voiceIndex": 35, "title": "English", "defaultVoice": 1},

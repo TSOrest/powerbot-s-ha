@@ -119,7 +119,8 @@ async def test_settings_read_from_robot(hass: HomeAssistant, mock_api) -> None:
     assert hass.states.get("sensor.kitchen_cleaning_mode").state == "auto"
     assert hass.states.get("sensor.kitchen_cleaned_area").state == "0"
     assert hass.states.get("sensor.kitchen_cleaning_time").state == "0"
-    assert hass.states.get("sensor.kitchen_error_code").state == "0"
+    assert hass.states.get("sensor.kitchen_error").state == "none"
+    assert hass.states.get("sensor.kitchen_error_code") is None  # diagnostic, disabled by default
 
 
 async def test_robot_not_answering_queries_keeps_entities_unknown(hass: HomeAssistant, mock_api) -> None:
@@ -226,3 +227,52 @@ async def test_no_water_level_without_mop(hass: HomeAssistant, mock_api) -> None
     await hass.async_block_till_done()
     assert hass.states.get("select.kitchen_water_level") is None
     assert hass.states.get("select.kitchen_voice") is not None
+
+
+async def test_schedule_switch(hass: HomeAssistant, mock_api) -> None:
+    entry = _entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    schedule = hass.states.get("switch.kitchen_schedule_1")
+    assert schedule.state == "off"
+    assert schedule.attributes["start"] == "10:00"
+    assert schedule.attributes["days"] == ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+    assert schedule.attributes["cleaning_mode"] == "auto"
+
+    await hass.services.async_call(
+        "switch", "turn_on", {"entity_id": "switch.kitchen_schedule_1"}, blocking=True
+    )
+    mock_api["send"].assert_any_await("111", protocol.schedule_enabled(1, True), wait_timeout=15)
+    assert hass.states.get("switch.kitchen_schedule_1").state == "on"
+
+
+async def test_move_and_clean_modes(hass: HomeAssistant, mock_api) -> None:
+    import pytest
+    from unittest.mock import patch
+
+    from homeassistant.exceptions import ServiceValidationError
+
+    entry = _entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    with patch("custom_components.powerbot_s.vacuum.asyncio.sleep") as sleep:
+        await hass.services.async_call(
+            "vacuum",
+            "send_command",
+            {"entity_id": "vacuum.kitchen", "command": "move", "params": {"direction": "left", "duration": 9}},
+            blocking=True,
+        )
+    sleep.assert_awaited_once_with(5.0)
+    sent = [c.args[1] for c in mock_api["send"].await_args_list]
+    assert sent.index(protocol.manual(3)) < sent.index(protocol.manual(0))
+
+    await hass.services.async_call(
+        "vacuum", "send_command", {"entity_id": "vacuum.kitchen", "command": "clean_edge"}, blocking=True
+    )
+    mock_api["send"].assert_any_await("111", protocol.start(3, 2, mode=3), wait_timeout=15)
+
+    with pytest.raises(ServiceValidationError):
+        await hass.services.async_call(
+            "vacuum", "send_command", {"entity_id": "vacuum.kitchen", "command": "dance"}, blocking=True
+        )

@@ -63,3 +63,43 @@ def test_work_state_area_and_time_high_bits() -> None:
     work = protocol.parse_work_state(frame.hex())
     assert (work.area, work.work_time) == (265, 515)
     assert (work.fault_class, work.fault_code) == (1, 7)
+
+
+def test_fault_key() -> None:
+    from custom_components.powerbot_s.const import FAULT_OPTIONS, fault_key
+
+    assert fault_key(0, 0) == "none"
+    assert fault_key(1, 10) == "none"  # hidden by the app
+    assert fault_key(99, 99) == "unknown_error"
+    for key in (fault_key(c, k) for c in range(1, 8) for k in range(1, 40)):
+        assert key in FAULT_OPTIONS
+
+
+def test_manual_and_mode_frames_match_app() -> None:
+    assert protocol.manual(1) == "AA15B80000000000000222020001010000000000000B"
+    assert protocol.manual(0) == "AA15B80000000000000222020001000000000000000C"
+    assert protocol.start(2, 2, mode=3) == "AA15B800000000000002220200020003020002000004"
+
+
+def test_schedule_frames_match_app() -> None:
+    assert protocol.query_schedules() == "AA0CB800000000000003340104"
+    assert protocol.schedule_enabled(1, True) == "AA19B80000000000000224000600000000000000000000000102"
+    assert protocol.schedule_enabled(1, False) == "AA19B80000000000000224000500000000000000000000000103"
+
+
+def test_parse_schedules() -> None:
+    from datetime import time
+
+    # Recorded from the robot: one daily schedule at 10:00, turned off
+    reply = "aa2ab800000000000003340100ff0a001e08020201010000000000000000000000000000000000000000b1"
+    (schedule,) = protocol.parse_schedules(reply)
+    assert schedule.task_id == 1
+    assert schedule.days == (0, 1, 2, 3, 4, 5, 6)
+    assert schedule.repeat
+    assert schedule.start == time(10, 0)
+    assert schedule.duration == 30
+    assert (schedule.work_mode, schedule.fan, schedule.water) == (8, 2, 2)
+    assert not schedule.enabled
+    # No schedules: just the header
+    assert protocol.parse_schedules("aa0db80000000000000334010003") == []
+    assert protocol.parse_schedules(None) is None
