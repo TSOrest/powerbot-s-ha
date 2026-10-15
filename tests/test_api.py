@@ -40,3 +40,28 @@ async def test_state_refreshes_expired_token(hass: HomeAssistant, aioclient_mock
         # the mock keeps answering 401, so the retry fails too
         await client.async_get_device_state("111")
     assert client.get_tokens()["access_token"] == "new"
+
+
+async def test_command_waits_longer_than_server_timeout(hass: HomeAssistant, aioclient_mock) -> None:
+    aioclient_mock.post(f"{EU}/devices/commands/111", json={"errorCode": "0"})
+    client = PowerBotApiClient(async_get_clientsession(hass), "a@b.c", "pw", access_token="t")
+    seen = {}
+    real = client._raw_request
+
+    async def spy(method, url, timeout=None, **kwargs):
+        seen["timeout"] = timeout
+        return await real(method, url, timeout=timeout, **kwargs)
+
+    client._raw_request = spy
+    await client.async_send_command("111", "AA", wait_timeout=30)
+    assert seen["timeout"].total > 30
+    assert aioclient_mock.mock_calls[-1][2] == {"data": "AA", "waitTimeoutInSeconds": 30}
+
+
+async def test_timeout_is_reported_clearly(hass: HomeAssistant, aioclient_mock) -> None:
+    from custom_components.powerbot_s.api import PowerBotApiError
+
+    aioclient_mock.post(f"{EU}/devices/commands/111", exc=TimeoutError())
+    client = PowerBotApiClient(async_get_clientsession(hass), "a@b.c", "pw", access_token="t")
+    with pytest.raises(PowerBotApiError, match="Timed out after 45s"):
+        await client.async_send_command("111", "AA", wait_timeout=30)

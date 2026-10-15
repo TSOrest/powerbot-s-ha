@@ -89,16 +89,26 @@ class PowerBotApiClient:
             headers["Authorization"] = f"Bearer {self._access_token}"
         return headers
 
-    async def _raw_request(self, method: str, url: str, **kwargs: Any) -> tuple[int, Any]:
+    async def _raw_request(
+        self,
+        method: str,
+        url: str,
+        timeout: aiohttp.ClientTimeout = REQUEST_TIMEOUT,
+        **kwargs: Any,
+    ) -> tuple[int, Any]:
         try:
             async with self._session.request(
-                method, url, headers=self._make_headers(), timeout=REQUEST_TIMEOUT, **kwargs
+                method, url, headers=self._make_headers(), timeout=timeout, **kwargs
             ) as resp:
                 if resp.status == 401:
                     return resp.status, None
                 return resp.status, await resp.json(content_type=None)
-        except (aiohttp.ClientError, TimeoutError, ValueError) as err:
-            raise PowerBotApiError(f"Error talking to {url}: {err}") from err
+        except TimeoutError as err:
+            raise PowerBotApiError(
+                f"Timed out after {timeout.total:.0f}s waiting for {url}"
+            ) from err
+        except (aiohttp.ClientError, ValueError) as err:
+            raise PowerBotApiError(f"Error talking to {url}: {err!r}") from err
 
     async def _request(self, method: str, path: str, **kwargs: Any) -> Any:
         """Make an authenticated API request, refreshing the token on 401."""
@@ -207,9 +217,15 @@ class PowerBotApiClient:
     ) -> None:
         """Send a hex command to the device."""
         body: dict[str, Any] = {"data": hex_data}
+        timeout = REQUEST_TIMEOUT
         if wait_timeout is not None:
             body["waitTimeoutInSeconds"] = wait_timeout
-        await self._request("POST", f"/devices/commands/{device_id}", json=body)
+            # The server holds the request open until the robot answers or
+            # wait_timeout expires, so give it more time than that.
+            timeout = aiohttp.ClientTimeout(total=wait_timeout + REQUEST_TIMEOUT.total)
+        await self._request(
+            "POST", f"/devices/commands/{device_id}", json=body, timeout=timeout
+        )
 
     def get_tokens(self) -> dict[str, str | None]:
         """Return the current session (for storage in the config entry)."""
