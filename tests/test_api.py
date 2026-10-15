@@ -65,3 +65,14 @@ async def test_timeout_is_reported_clearly(hass: HomeAssistant, aioclient_mock) 
     client = PowerBotApiClient(async_get_clientsession(hass), "a@b.c", "pw", access_token="t")
     with pytest.raises(PowerBotApiError, match="Timed out after 45s"):
         await client.async_send_command("111", "AA", wait_timeout=30)
+
+
+async def test_device_timeout_code(hass: HomeAssistant, aioclient_mock) -> None:
+    from custom_components.powerbot_s.api import PowerBotDeviceTimeoutError
+
+    aioclient_mock.post(
+        f"{EU}/devices/commands/111", json={"errorCode": "0080005", "msg": "device response timeout"}
+    )
+    client = PowerBotApiClient(async_get_clientsession(hass), "a@b.c", "pw", access_token="t")
+    with pytest.raises(PowerBotDeviceTimeoutError):
+        await client.async_send_command("111", "AA", wait_timeout=30)

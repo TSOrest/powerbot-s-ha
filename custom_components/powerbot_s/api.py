@@ -38,6 +38,14 @@ class PowerBotAuthError(PowerBotApiError):
     """Authentication error (wrong credentials or expired session)."""
 
 
+class PowerBotDeviceTimeoutError(PowerBotApiError):
+    """The cloud accepted a command but the robot did not answer it."""
+
+
+# Cloud error code for "device response timeout"
+_DEVICE_TIMEOUT_CODE = "0080005"
+
+
 def device_id_of(device: dict[str, Any]) -> str:
     """Return the device id from a device list item."""
     return str(device.get("deviceId") or device.get("id") or "")
@@ -131,6 +139,8 @@ class PowerBotApiClient:
         error_code = data.get("errorCode")
         if error_code and error_code != "0":
             reason = data.get("reason") or data.get("msg") or "Unknown error"
+            if error_code == _DEVICE_TIMEOUT_CODE:
+                raise PowerBotDeviceTimeoutError(f"API error {error_code}: {reason}")
             raise PowerBotApiError(f"API error {error_code}: {reason}")
         return data.get("data", data)
 

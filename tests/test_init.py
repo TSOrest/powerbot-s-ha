@@ -47,3 +47,17 @@ async def test_auth_failure_starts_reauth(hass: HomeAssistant, mock_api) -> None
     await hass.async_block_till_done()
     assert entry.state is ConfigEntryState.SETUP_ERROR
     assert any(f["context"]["source"] == "reauth" for f in hass.config_entries.flow.async_progress())
+
+
+async def test_robot_not_responding_has_clear_error(hass: HomeAssistant, mock_api) -> None:
+    import pytest
+    from homeassistant.exceptions import HomeAssistantError
+
+    from custom_components.powerbot_s.api import PowerBotDeviceTimeoutError
+
+    entry = _entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    mock_api["send"].side_effect = PowerBotDeviceTimeoutError("API error 0080005: device response timeout")
+    with pytest.raises(HomeAssistantError, match="did not respond"):
+        await hass.services.async_call("vacuum", "start", {"entity_id": "vacuum.kitchen"}, blocking=True)

@@ -12,7 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .api import PowerBotApiError
+from .api import PowerBotApiError, PowerBotDeviceTimeoutError
 from .const import (
     CLEANING_STATES,
     DOCKED_STATES,
@@ -105,6 +105,10 @@ class PowerBotVacuum(PowerBotEntity, StateVacuumEntity):
             await self.coordinator.client.async_send_command(
                 self.coordinator.device_id, hex_data, wait_timeout=30
             )
+        except PowerBotDeviceTimeoutError as err:
+            raise HomeAssistantError(
+                "The robot did not respond. Check that it is online in the POWERbot-S app."
+            ) from err
         except PowerBotApiError as err:
             raise HomeAssistantError(f"Command failed: {err}") from err
         await self.coordinator.async_request_refresh()
