@@ -90,6 +90,32 @@
       },
       "main_brush_life": {
         "name": "Hlavní kartáč"
+      },
+      "cleaning_mode": {
+        "name": "Režim úklidu",
+        "state": {
+          "random": "Náhodný",
+          "arc": "Oblouk",
+          "edge": "Okraje",
+          "spot": "Bodový",
+          "spiral": "Spirála",
+          "bed": "Postel",
+          "wide_spiral": "Široká spirála",
+          "auto": "Auto",
+          "area": "Plocha",
+          "room": "Místnost",
+          "zone": "Zóna",
+          "path": "Trasa"
+        }
+      },
+      "cleaned_area": {
+        "name": "Uklizená plocha"
+      },
+      "cleaning_time": {
+        "name": "Doba úklidu"
+      },
+      "error_code": {
+        "name": "Kód chyby"
       }
     },
     "binary_sensor": {

@@ -90,6 +90,32 @@
       },
       "main_brush_life": {
         "name": "Szczotka główna"
+      },
+      "cleaning_mode": {
+        "name": "Tryb sprzątania",
+        "state": {
+          "random": "Losowy",
+          "arc": "Łuk",
+          "edge": "Krawędzie",
+          "spot": "Punktowy",
+          "spiral": "Spirala",
+          "bed": "Łóżko",
+          "wide_spiral": "Szeroka spirala",
+          "auto": "Auto",
+          "area": "Obszar",
+          "room": "Pokój",
+          "zone": "Strefa",
+          "path": "Trasa"
+        }
+      },
+      "cleaned_area": {
+        "name": "Posprzątana powierzchnia"
+      },
+      "cleaning_time": {
+        "name": "Czas sprzątania"
+      },
+      "error_code": {
+        "name": "Kod błędu"
       }
     },
     "binary_sensor": {

@@ -116,6 +116,11 @@ class WorkState:
     volume: int
     carpet: bool
     has_mop: bool
+    work_mode: int = 0
+    area: int = 0  # m2 cleaned in the current or last job
+    work_time: int = 0  # minutes
+    fault_class: int = 0
+    fault_code: int = 0
 
 
 @dataclass(frozen=True)
@@ -152,6 +157,12 @@ def parse_work_state(hex_frame: str | None) -> WorkState | None:
         volume=frame[20],
         carpet=bool(frame[28]),
         has_mop=bool(frame[27] & 1),
+        work_mode=frame[16],
+        # Area and time carry extra high bits in byte 33 (scaled by 255, as the app does)
+        area=frame[18] + 255 * (frame[33] & 0x0F if len(frame) > 33 else 0),
+        work_time=frame[23] + 255 * (frame[33] >> 4 if len(frame) > 33 else 0),
+        fault_class=frame[25],
+        fault_code=frame[26],
     )
 
 

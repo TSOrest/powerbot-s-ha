@@ -26,6 +26,18 @@
       },
       "main_brush_life": {
         "default": "mdi:broom"
+      },
+      "cleaning_mode": {
+        "default": "mdi:map-marker-path"
+      },
+      "cleaned_area": {
+        "default": "mdi:texture-box"
+      },
+      "cleaning_time": {
+        "default": "mdi:timer-outline"
+      },
+      "error_code": {
+        "default": "mdi:alert-circle-outline"
       }
     },
     "binary_sensor": {

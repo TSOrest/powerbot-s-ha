@@ -90,6 +90,32 @@
       },
       "main_brush_life": {
         "name": "Brosse principale"
+      },
+      "cleaning_mode": {
+        "name": "Mode de nettoyage",
+        "state": {
+          "random": "Aléatoire",
+          "arc": "Arc",
+          "edge": "Bords",
+          "spot": "Spot",
+          "spiral": "Spirale",
+          "bed": "Lit",
+          "wide_spiral": "Spirale large",
+          "auto": "Auto",
+          "area": "Surface",
+          "room": "Pièce",
+          "zone": "Zone",
+          "path": "Trajet"
+        }
+      },
+      "cleaned_area": {
+        "name": "Surface nettoyée"
+      },
+      "cleaning_time": {
+        "name": "Durée de nettoyage"
+      },
+      "error_code": {
+        "name": "Code d'erreur"
       }
     },
     "binary_sensor": {

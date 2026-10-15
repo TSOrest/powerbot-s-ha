@@ -88,6 +88,8 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.plugin: str | None = None
         # Read from the robot: False when it reports no mop attached
         self.has_mop: bool | None = None
+        # Last work-state reply from the robot
+        self.work: protocol.WorkState | None = None
 
     @property
     def supported(self) -> bool:
@@ -171,6 +173,7 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             self.volume = work.volume
             self.carpet_mode = work.carpet
             self.has_mop = work.has_mop
+            self.work = work
         if not slow:
             return
         if dnd := protocol.parse_dnd(await self._async_query(protocol.query_dnd())):

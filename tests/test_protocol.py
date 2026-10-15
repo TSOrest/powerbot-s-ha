@@ -40,7 +40,9 @@ def test_parse_replies() -> None:
     from .conftest import REPLIES
 
     work = protocol.parse_work_state(REPLIES[protocol.query_work_state()])
-    assert work == protocol.WorkState(fan=1, water=3, volume=99, carpet=True, has_mop=True)
+    assert work == protocol.WorkState(
+        fan=1, water=3, volume=99, carpet=True, has_mop=True, work_mode=8, area=0, work_time=0
+    )
     dnd = protocol.parse_dnd(REPLIES[protocol.query_dnd()])
     assert dnd == protocol.DoNotDisturb(enabled=True, start=time(22, 0), end=time(8, 0))
     assert protocol.parse_voice(REPLIES[protocol.query_voice()]) == 128
@@ -50,3 +52,14 @@ def test_parse_replies() -> None:
 def test_parse_rejects_other_frames(reply) -> None:
     assert protocol.parse_work_state(reply) is None
     assert protocol.parse_dnd(reply) is None
+
+
+def test_work_state_area_and_time_high_bits() -> None:
+    from .conftest import REPLIES
+
+    frame = bytearray.fromhex(REPLIES[protocol.query_work_state()])
+    frame[18], frame[23], frame[33] = 10, 5, 0x21  # time high nibble 2, area high nibble 1
+    frame[25], frame[26] = 1, 7
+    work = protocol.parse_work_state(frame.hex())
+    assert (work.area, work.work_time) == (265, 515)
+    assert (work.fault_class, work.fault_code) == (1, 7)

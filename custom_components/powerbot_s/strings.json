@@ -90,6 +90,32 @@
       },
       "main_brush_life": {
         "name": "Main brush"
+      },
+      "cleaning_mode": {
+        "name": "Cleaning mode",
+        "state": {
+          "random": "Random",
+          "arc": "Arc",
+          "edge": "Edge",
+          "spot": "Spot",
+          "spiral": "Spiral",
+          "bed": "Bed",
+          "wide_spiral": "Wide spiral",
+          "auto": "Auto",
+          "area": "Area",
+          "room": "Room",
+          "zone": "Zone",
+          "path": "Path"
+        }
+      },
+      "cleaned_area": {
+        "name": "Cleaned area"
+      },
+      "cleaning_time": {
+        "name": "Cleaning time"
+      },
+      "error_code": {
+        "name": "Error code"
       }
     },
     "binary_sensor": {

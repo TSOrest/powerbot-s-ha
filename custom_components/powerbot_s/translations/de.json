@@ -90,6 +90,32 @@
       },
       "main_brush_life": {
         "name": "Hauptbürste"
+      },
+      "cleaning_mode": {
+        "name": "Reinigungsmodus",
+        "state": {
+          "random": "Zufall",
+          "arc": "Bogen",
+          "edge": "Kanten",
+          "spot": "Spot",
+          "spiral": "Spirale",
+          "bed": "Bett",
+          "wide_spiral": "Breite Spirale",
+          "auto": "Auto",
+          "area": "Bereich",
+          "room": "Raum",
+          "zone": "Zone",
+          "path": "Pfad"
+        }
+      },
+      "cleaned_area": {
+        "name": "Gereinigte Fläche"
+      },
+      "cleaning_time": {
+        "name": "Reinigungszeit"
+      },
+      "error_code": {
+        "name": "Fehlercode"
       }
     },
     "binary_sensor": {

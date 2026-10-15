@@ -116,6 +116,10 @@ async def test_settings_read_from_robot(hass: HomeAssistant, mock_api) -> None:
     assert hass.states.get("sensor.kitchen_side_brush").state == "31"
     assert hass.states.get("sensor.kitchen_main_brush").state == "65"
     mock_api["parts"].assert_awaited_with("111", "u1")
+    assert hass.states.get("sensor.kitchen_cleaning_mode").state == "auto"
+    assert hass.states.get("sensor.kitchen_cleaned_area").state == "0"
+    assert hass.states.get("sensor.kitchen_cleaning_time").state == "0"
+    assert hass.states.get("sensor.kitchen_error_code").state == "0"
 
 
 async def test_robot_not_answering_queries_keeps_entities_unknown(hass: HomeAssistant, mock_api) -> None:
@@ -198,7 +202,7 @@ async def test_other_model_is_read_only(hass: HomeAssistant, mock_api) -> None:
     assert vacuum.attributes["supported_features"] == 4096  # state only
     assert hass.states.get("sensor.kitchen_battery").state == "87"
     for entity_id in ("number.kitchen_volume", "select.kitchen_water_level", "switch.kitchen_carpet_mode",
-                      "sensor.kitchen_filter"):
+                      "sensor.kitchen_filter", "sensor.kitchen_cleaning_mode"):
         assert hass.states.get(entity_id) is None
     # No query frames are sent to a robot whose command set is unknown
     mock_api["send"].assert_not_awaited()

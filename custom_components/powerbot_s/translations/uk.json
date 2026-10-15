@@ -90,6 +90,32 @@
       },
       "main_brush_life": {
         "name": "Основна щітка"
+      },
+      "cleaning_mode": {
+        "name": "Режим прибирання",
+        "state": {
+          "random": "Довільний",
+          "arc": "Дугою",
+          "edge": "По краях",
+          "spot": "Точкове",
+          "spiral": "Спіраль",
+          "bed": "Ліжко",
+          "wide_spiral": "Широка спіраль",
+          "auto": "Авто",
+          "area": "Ділянка",
+          "room": "Кімната",
+          "zone": "Зона",
+          "path": "Маршрут"
+        }
+      },
+      "cleaned_area": {
+        "name": "Прибрана площа"
+      },
+      "cleaning_time": {
+        "name": "Час прибирання"
+      },
+      "error_code": {
+        "name": "Код помилки"
       }
     },
     "binary_sensor": {

@@ -90,6 +90,32 @@
       },
       "main_brush_life": {
         "name": "Hlavná kefa"
+      },
+      "cleaning_mode": {
+        "name": "Režim upratovania",
+        "state": {
+          "random": "Náhodný",
+          "arc": "Oblúk",
+          "edge": "Okraje",
+          "spot": "Bodový",
+          "spiral": "Špirála",
+          "bed": "Posteľ",
+          "wide_spiral": "Široká špirála",
+          "auto": "Auto",
+          "area": "Plocha",
+          "room": "Miestnosť",
+          "zone": "Zóna",
+          "path": "Trasa"
+        }
+      },
+      "cleaned_area": {
+        "name": "Upratená plocha"
+      },
+      "cleaning_time": {
+        "name": "Čas upratovania"
+      },
+      "error_code": {
+        "name": "Kód chyby"
       }
     },
     "binary_sensor": {

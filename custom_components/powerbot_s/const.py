@@ -42,6 +42,22 @@ DEFAULT_SN8 = "610VR510"
 SUPPORTED_SN8 = ("610VR510", "620VR520")
 SUPPORTED_PROTO_VERSIONS = (0,)
 
+# Work modes reported in the work-state reply (byte 16)
+WORK_MODES = {
+    1: "random",
+    2: "arc",
+    3: "edge",
+    4: "spot",
+    5: "spiral",
+    6: "bed",
+    7: "wide_spiral",
+    8: "auto",
+    9: "area",
+    10: "room",
+    11: "zone",
+    12: "path",
+}
+
 # Consumables: Midea field name -> (entity key, lifetime in hours)
 CONSUMABLES = {
     "filter_net_time": ("filter", 150),
