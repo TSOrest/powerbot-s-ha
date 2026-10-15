@@ -27,6 +27,22 @@ def test_decode_rooms() -> None:
     assert robot_map.decode_rooms("map_zone 0 0 0 0 0 0 0") == (None, [])
 
 
+def test_live_header_layout() -> None:
+    """Header layout as read from a VR7700: rooms with gaps in their ids."""
+    import base64
+    import zlib
+
+    payload = base64.b64encode(zlib.compress(bytes([170] + [5] * 5))).decode()
+    grid, ids = robot_map.decode_rooms(
+        f"map_zone 3 2 365 272 367 273 3 1 365 272 365 272 5 366 272 367 273 7 367 273 367 273 {payload}"
+    )
+    assert ids == [1, 5, 7]
+    assert (grid.left, grid.bottom, grid.width, grid.height) == (365, 272, 3, 2)
+    whole = robot_map.decode_map(f"info_map 0 365 272 367 273 {payload}")
+    assert whole.pixels[0] == robot_map.ROOM_MAP_MARK
+    assert robot_map.room_names(ids, '{"1": "A", "5": "E"}') == {1: "A", 5: "E", 7: "Room 7"}
+
+
 def test_render_png() -> None:
     png = robot_map.render_png(robot_map.decode_map(MAP), scale=1)
     assert png.startswith(b"\x89PNG\r\n\x1a\n")

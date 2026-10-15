@@ -261,6 +261,7 @@ class PowerBotApiClient:
             "Content-Type": "application/json",
             "X-Timestamp": str(int(time.time() * 1000)),
             "x-obm": "true",
+            "x-mz-mfr": "meizhi",
         }
         if self._access_token:
             headers["X-Token"] = self._access_token
