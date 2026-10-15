@@ -81,6 +81,15 @@
           "online": "Online",
           "offline": "Offline"
         }
+      },
+      "filter_life": {
+        "name": "Filter"
+      },
+      "side_brush_life": {
+        "name": "Bočná kefa"
+      },
+      "main_brush_life": {
+        "name": "Hlavná kefa"
       }
     },
     "binary_sensor": {
@@ -100,11 +109,30 @@
           "normal": "Normálne",
           "high": "Vysoké"
         }
+      },
+      "voice": {
+        "name": "Hlas"
       }
     },
     "switch": {
       "carpet_mode": {
         "name": "Režim koberca"
+      },
+      "do_not_disturb": {
+        "name": "Nerušiť"
+      }
+    },
+    "number": {
+      "volume": {
+        "name": "Hlasitosť"
+      }
+    },
+    "time": {
+      "dnd_start": {
+        "name": "Začiatok Nerušiť"
+      },
+      "dnd_end": {
+        "name": "Koniec Nerušiť"
       }
     }
   }

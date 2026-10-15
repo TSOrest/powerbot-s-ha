@@ -36,7 +36,7 @@ async def test_setup_creates_entities(hass: HomeAssistant, mock_api) -> None:
 
     await hass.services.async_call("vacuum", "start", {"entity_id": "vacuum.kitchen"}, blocking=True)
     # Docked robot: a fresh auto clean with current suction (turbo) and default water (normal)
-    mock_api["send"].assert_awaited_with("111", protocol.start(3, 2), wait_timeout=15)
+    mock_api["send"].assert_any_await("111", protocol.start(3, 2), wait_timeout=15)
 
     assert await hass.config_entries.async_unload(entry.entry_id)
 
@@ -81,11 +81,11 @@ async def test_water_level_and_carpet(hass: HomeAssistant, mock_api) -> None:
     await hass.services.async_call(
         "select", "select_option", {"entity_id": "select.kitchen_water_level", "option": "high"}, blocking=True
     )
-    mock_api["send"].assert_awaited_with("111", protocol.set_suction(3, 3), wait_timeout=15)
+    mock_api["send"].assert_any_await("111", protocol.set_suction(3, 3), wait_timeout=15)
     assert hass.states.get("select.kitchen_water_level").state == "high"
 
     await hass.services.async_call("switch", "turn_on", {"entity_id": "switch.kitchen_carpet_mode"}, blocking=True)
-    mock_api["send"].assert_awaited_with("111", protocol.carpet_mode(True), wait_timeout=15)
+    mock_api["send"].assert_any_await("111", protocol.carpet_mode(True), wait_timeout=15)
     assert hass.states.get("switch.kitchen_carpet_mode").state == "on"
 
 
@@ -95,4 +95,76 @@ async def test_paused_start_resumes(hass: HomeAssistant, mock_api) -> None:
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
     await hass.services.async_call("vacuum", "start", {"entity_id": "vacuum.kitchen"}, blocking=True)
-    mock_api["send"].assert_awaited_with("111", protocol.resume(), wait_timeout=15)
+    mock_api["send"].assert_any_await("111", protocol.resume(), wait_timeout=15)
+
+
+async def test_settings_read_from_robot(hass: HomeAssistant, mock_api) -> None:
+    entry = _entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert hass.states.get("number.kitchen_volume").state == "99"
+    assert hass.states.get("switch.kitchen_carpet_mode").state == "on"
+    assert hass.states.get("switch.kitchen_do_not_disturb").state == "on"
+    assert hass.states.get("time.kitchen_do_not_disturb_start").state == "22:00:00"
+    assert hass.states.get("time.kitchen_do_not_disturb_end").state == "08:00:00"
+    voice = hass.states.get("select.kitchen_voice")
+    assert voice.state == "Українська"
+    assert voice.attributes["options"] == ["English", "Українська"]
+    # 4112 minutes used: filter 150 h, side brush 100 h, main brush 200 h
+    assert hass.states.get("sensor.kitchen_filter").state == "54"
+    assert hass.states.get("sensor.kitchen_side_brush").state == "31"
+    assert hass.states.get("sensor.kitchen_main_brush").state == "65"
+    mock_api["parts"].assert_awaited_with("111", "u1")
+
+
+async def test_robot_not_answering_queries_keeps_entities_unknown(hass: HomeAssistant, mock_api) -> None:
+    from custom_components.powerbot_s.api import PowerBotDeviceTimeoutError
+
+    mock_api["send"].side_effect = PowerBotDeviceTimeoutError("timeout")
+    entry = _entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert hass.states.get("vacuum.kitchen").state == "docked"
+    assert hass.states.get("number.kitchen_volume").state == "unknown"
+
+
+async def test_locate_volume_voice_and_do_not_disturb(hass: HomeAssistant, mock_api) -> None:
+    entry = _entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    send = mock_api["send"]
+
+    await hass.services.async_call("vacuum", "locate", {"entity_id": "vacuum.kitchen"}, blocking=True)
+    send.assert_any_await("111", protocol.locate(), wait_timeout=15)
+
+    await hass.services.async_call(
+        "number", "set_value", {"entity_id": "number.kitchen_volume", "value": 40}, blocking=True
+    )
+    send.assert_any_await("111", protocol.volume(40), wait_timeout=15)
+
+    await hass.services.async_call(
+        "select", "select_option", {"entity_id": "select.kitchen_voice", "option": "English"}, blocking=True
+    )
+    send.assert_any_await("111", protocol.select_voice(35), wait_timeout=15)
+    assert hass.states.get("select.kitchen_voice").state == "English"
+
+    # Do not disturb is on (read from the robot), so a new end time is sent right away
+    await hass.services.async_call(
+        "time", "set_value", {"entity_id": "time.kitchen_do_not_disturb_end", "time": "07:00:00"}, blocking=True
+    )
+    send.assert_any_await("111", protocol.do_not_disturb(True, (22, 0), (7, 0)), wait_timeout=15)
+
+    await hass.services.async_call(
+        "switch", "turn_off", {"entity_id": "switch.kitchen_do_not_disturb"}, blocking=True
+    )
+    send.assert_any_await("111", protocol.do_not_disturb(False, (22, 0), (7, 0)), wait_timeout=15)
+    assert hass.states.get("switch.kitchen_do_not_disturb").state == "off"
+
+    # While it is off, a new start time is only stored
+    send.reset_mock()
+    await hass.services.async_call(
+        "time", "set_value", {"entity_id": "time.kitchen_do_not_disturb_start", "time": "23:30:00"}, blocking=True
+    )
+    assert all(call.kwargs["wait_timeout"] != 15 for call in send.await_args_list)
+    assert hass.states.get("time.kitchen_do_not_disturb_start").state == "23:30:00"

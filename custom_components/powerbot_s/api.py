@@ -9,17 +9,30 @@ Reverse-engineered from com.mzbots.android.powerbot v1.2.1 APK.
 - Devices: GET /app/devices?version=1&isShared=false
 - State: GET /shadow/device/state?devices=<deviceId>
 - Command: POST /devices/commands/<deviceId>  Body: {"data": "<hex>"}
+  A query frame's reply comes back as hex in data.data.
+
+Consumables and voice packs live on Midea's server (PARTS_HOSTS):
+- POST /v2/app2pro/m7/parts/info  Body: {"deviceId": ..., "userId": <ownerId>}
+- GET  /v2/app2pro/m7/voice/list?sn8=<sn8>
 """
 from __future__ import annotations
 
 from collections.abc import Callable
 import logging
+import time
 from typing import Any
 import uuid
 
 import aiohttp
 
-from .const import APP_ENV, APP_VERSION, CLIENT_ID, DEFAULT_REGION, REGION_HOSTS
+from .const import (
+    APP_ENV,
+    APP_VERSION,
+    CLIENT_ID,
+    DEFAULT_REGION,
+    PARTS_HOSTS,
+    REGION_HOSTS,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -224,8 +237,8 @@ class PowerBotApiClient:
 
     async def async_send_command(
         self, device_id: str, hex_data: str, wait_timeout: int | None = None
-    ) -> None:
-        """Send a hex command to the device."""
+    ) -> str | None:
+        """Send a hex command to the device and return the robot's reply hex, if any."""
         body: dict[str, Any] = {"data": hex_data}
         timeout = REQUEST_TIMEOUT
         if wait_timeout is not None:
@@ -233,9 +246,49 @@ class PowerBotApiClient:
             # The server holds the request open until the robot answers or
             # wait_timeout expires, so give it more time than that.
             timeout = aiohttp.ClientTimeout(total=wait_timeout + REQUEST_TIMEOUT.total)
-        await self._request(
+        result = await self._request(
             "POST", f"/devices/commands/{device_id}", json=body, timeout=timeout
         )
+        if isinstance(result, dict) and isinstance(result.get("data"), str):
+            return result["data"]
+        return None
+
+    async def _midea_request(self, method: str, path: str, **kwargs: Any) -> Any:
+        url = f"{PARTS_HOSTS.get(self._region, PARTS_HOSTS[DEFAULT_REGION])}{path}"
+        headers = {
+            "Content-Type": "application/json",
+            "X-Timestamp": str(int(time.time() * 1000)),
+            "x-obm": "true",
+        }
+        if self._access_token:
+            headers["X-Token"] = self._access_token
+        try:
+            async with self._session.request(
+                method, url, headers=headers, timeout=REQUEST_TIMEOUT, **kwargs
+            ) as resp:
+                data = await resp.json(content_type=None)
+        except (TimeoutError, aiohttp.ClientError, ValueError) as err:
+            raise PowerBotApiError(f"Error talking to {url}: {err!r}") from err
+        if not isinstance(data, dict):
+            raise PowerBotApiError(f"Unexpected response: {data!r}")
+        code = data.get("errorCode", data.get("code"))
+        if code not in (None, "0", 0):
+            raise PowerBotApiError(f"API error {code}: {data.get('msg')}")
+        return data.get("data")
+
+    async def async_get_parts(self, device_id: str, user_id: str) -> dict[str, Any]:
+        """Return consumable counters (minutes used, as strings)."""
+        result = await self._midea_request(
+            "POST", "/v2/app2pro/m7/parts/info", json={"deviceId": device_id, "userId": user_id}
+        )
+        return result if isinstance(result, dict) else {}
+
+    async def async_get_voices(self, sn8: str) -> list[dict[str, Any]]:
+        """Return the voice packs available for a model."""
+        result = await self._midea_request(
+            "GET", "/v2/app2pro/m7/voice/list", params={"sn8": sn8}
+        )
+        return result if isinstance(result, list) else []
 
     def get_tokens(self) -> dict[str, str | None]:
         """Return the current session (for storage in the config entry)."""

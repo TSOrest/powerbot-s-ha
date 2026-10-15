@@ -81,6 +81,15 @@
           "online": "Online",
           "offline": "Offline"
         }
+      },
+      "filter_life": {
+        "name": "Filtr"
+      },
+      "side_brush_life": {
+        "name": "Boční kartáč"
+      },
+      "main_brush_life": {
+        "name": "Hlavní kartáč"
       }
     },
     "binary_sensor": {
@@ -100,11 +109,30 @@
           "normal": "Normální",
           "high": "Vysoké"
         }
+      },
+      "voice": {
+        "name": "Hlas"
       }
     },
     "switch": {
       "carpet_mode": {
         "name": "Režim koberce"
+      },
+      "do_not_disturb": {
+        "name": "Nerušit"
+      }
+    },
+    "number": {
+      "volume": {
+        "name": "Hlasitost"
+      }
+    },
+    "time": {
+      "dnd_start": {
+        "name": "Začátek Nerušit"
+      },
+      "dnd_end": {
+        "name": "Konec Nerušit"
       }
     }
   }

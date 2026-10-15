@@ -81,6 +81,15 @@
           "online": "Online",
           "offline": "Offline"
         }
+      },
+      "filter_life": {
+        "name": "Filtr"
+      },
+      "side_brush_life": {
+        "name": "Szczotka boczna"
+      },
+      "main_brush_life": {
+        "name": "Szczotka główna"
       }
     },
     "binary_sensor": {
@@ -100,11 +109,30 @@
           "normal": "Normalny",
           "high": "Wysoki"
         }
+      },
+      "voice": {
+        "name": "Głos"
       }
     },
     "switch": {
       "carpet_mode": {
         "name": "Tryb dywanu"
+      },
+      "do_not_disturb": {
+        "name": "Nie przeszkadzać"
+      }
+    },
+    "number": {
+      "volume": {
+        "name": "Głośność"
+      }
+    },
+    "time": {
+      "dnd_start": {
+        "name": "Początek Nie przeszkadzać"
+      },
+      "dnd_end": {
+        "name": "Koniec Nie przeszkadzać"
       }
     }
   }

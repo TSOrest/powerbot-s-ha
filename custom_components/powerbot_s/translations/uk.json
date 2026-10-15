@@ -81,6 +81,15 @@
           "online": "Онлайн",
           "offline": "Офлайн"
         }
+      },
+      "filter_life": {
+        "name": "Фільтр"
+      },
+      "side_brush_life": {
+        "name": "Бічна щітка"
+      },
+      "main_brush_life": {
+        "name": "Основна щітка"
       }
     },
     "binary_sensor": {
@@ -100,11 +109,30 @@
           "normal": "Нормальний",
           "high": "Високий"
         }
+      },
+      "voice": {
+        "name": "Голос"
       }
     },
     "switch": {
       "carpet_mode": {
         "name": "Режим килима"
+      },
+      "do_not_disturb": {
+        "name": "Не турбувати"
+      }
+    },
+    "number": {
+      "volume": {
+        "name": "Гучність"
+      }
+    },
+    "time": {
+      "dnd_start": {
+        "name": "Початок «Не турбувати»"
+      },
+      "dnd_end": {
+        "name": "Кінець «Не турбувати»"
       }
     }
   }

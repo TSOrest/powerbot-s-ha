@@ -76,3 +76,38 @@ async def test_device_timeout_code(hass: HomeAssistant, aioclient_mock) -> None:
     client = PowerBotApiClient(async_get_clientsession(hass), "a@b.c", "pw", access_token="t")
     with pytest.raises(PowerBotDeviceTimeoutError):
         await client.async_send_command("111", "AA", wait_timeout=30)
+
+
+async def test_query_returns_robot_reply(hass: HomeAssistant, aioclient_mock) -> None:
+    aioclient_mock.post(
+        f"{EU}/devices/commands/111",
+        json={"errorCode": "0", "data": {"deviceId": "111", "data": "aa0cb800000000000103368082", "version": 1}},
+    )
+    client = PowerBotApiClient(async_get_clientsession(hass), "a@b.c", "pw", access_token="t")
+    assert await client.async_send_command("111", "AA0BB8000000000000033604", wait_timeout=5) == (
+        "aa0cb800000000000103368082"
+    )
+
+
+async def test_parts_and_voices_from_midea(hass: HomeAssistant, aioclient_mock) -> None:
+    from custom_components.powerbot_s.api import PowerBotApiError
+    from custom_components.powerbot_s.const import PARTS_HOSTS
+
+    host = PARTS_HOSTS["eu"]
+    aioclient_mock.post(
+        f"{host}/v2/app2pro/m7/parts/info", json={"errorCode": "0", "data": {"filter_net_time": "4112"}}
+    )
+    aioclient_mock.get(
+        f"{host}/v2/app2pro/m7/voice/list", json={"code": "0", "data": [{"id": 35, "title": "English"}]}
+    )
+    client = PowerBotApiClient(async_get_clientsession(hass), "a@b.c", "pw", access_token="t")
+    assert await client.async_get_parts("111", "u1") == {"filter_net_time": "4112"}
+    assert aioclient_mock.mock_calls[-1][2] == {"deviceId": "111", "userId": "u1"}
+    assert await client.async_get_voices("610VR510") == [{"id": 35, "title": "English"}]
+
+    aioclient_mock.clear_requests()
+    aioclient_mock.post(
+        f"{host}/v2/app2pro/m7/parts/info", json={"errorCode": "3102", "msg": "The user does not exist."}
+    )
+    with pytest.raises(PowerBotApiError, match="3102"):
+        await client.async_get_parts("111", "")

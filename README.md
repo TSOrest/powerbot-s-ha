@@ -19,7 +19,7 @@ Custom Home Assistant integration for the **Samsung VR7700 (POWERbot-S)** robot 
 
 | Entity | Type | Description |
 |--------|------|-------------|
-| Vacuum | `vacuum` | Start, stop, pause/resume, return to dock, suction (off / quiet / low / normal / turbo / max) |
+| Vacuum | `vacuum` | Start, stop, pause/resume, return to dock, locate (beep), suction (off / quiet / low / normal / turbo / max) |
 | Status | `sensor` | Raw state string from the cloud (`cleaning`, `charging_finish`, …) |
 | Battery | `sensor` | Battery level (%) |
 | Fan speed | `sensor` | Current suction level |
@@ -29,7 +29,12 @@ Custom Home Assistant integration for the **Samsung VR7700 (POWERbot-S)** robot 
 | Docked | `binary_sensor` | `on` while in the charging dock |
 | Connectivity | `binary_sensor` | `on` when the cloud is reachable (diagnostic) |
 | Water level | `select` | Mop water level (off / low / normal / high) |
-| Carpet mode | `switch` | Raise suction on carpets (shows the last value set from HA) |
+| Carpet mode | `switch` | Raise suction on carpets |
+| Do not disturb | `switch` | Keep the robot quiet between the start and end times |
+| Do not disturb start / end | `time` | Do-not-disturb period |
+| Volume | `number` | Voice volume, 0–100 % |
+| Voice | `select` | Voice pack (the robot downloads a new one itself) |
+| Filter / Side brush / Main brush | `sensor` | Remaining life, % (filter 150 h, side brush 100 h, main brush 200 h) |
 
 ### Requirements
 
@@ -75,7 +80,7 @@ logger:
 
 | Сутність | Тип | Опис |
 |----------|-----|------|
-| Пилосос | `vacuum` | Старт, стоп, пауза/продовження, на базу, потужність всмоктування (вимк. / тихо / низька / нормальна / турбо / максимум) |
+| Пилосос | `vacuum` | Старт, стоп, пауза/продовження, на базу, пошук (звуковий сигнал), потужність всмоктування (вимк. / тихо / низька / нормальна / турбо / максимум) |
 | Стан | `sensor` | Рядок стану з хмари (`cleaning`, `charging_finish`, …) |
 | Батарея | `sensor` | Рівень заряду (%) |
 | Швидкість вентилятора | `sensor` | Поточний рівень всмоктування |
@@ -85,7 +90,12 @@ logger:
 | На базі | `binary_sensor` | `on`, коли робот на зарядній станції |
 | Підключення | `binary_sensor` | `on`, коли хмара доступна (діагностика) |
 | Рівень води | `select` | Подача води для вологого прибирання (вимк. / низький / нормальний / високий) |
-| Режим килима | `switch` | Підвищує всмоктування на килимах (показує останнє значення, задане з HA) |
+| Режим килима | `switch` | Підвищує всмоктування на килимах |
+| Не турбувати | `switch` | Робот мовчить між часом початку і кінця |
+| Початок / кінець «Не турбувати» | `time` | Період «Не турбувати» |
+| Гучність | `number` | Гучність голосу, 0–100 % |
+| Голос | `select` | Голосовий пакет (робот сам завантажує новий) |
+| Фільтр / Бічна щітка / Основна щітка | `sensor` | Залишок ресурсу, % (фільтр 150 год, бічна щітка 100 год, основна 200 год) |
 
 ### Вимоги
 

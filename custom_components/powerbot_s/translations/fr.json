@@ -81,6 +81,15 @@
           "online": "En ligne",
           "offline": "Hors ligne"
         }
+      },
+      "filter_life": {
+        "name": "Filtre"
+      },
+      "side_brush_life": {
+        "name": "Brosse latérale"
+      },
+      "main_brush_life": {
+        "name": "Brosse principale"
       }
     },
     "binary_sensor": {
@@ -100,11 +109,30 @@
           "normal": "Normal",
           "high": "Élevé"
         }
+      },
+      "voice": {
+        "name": "Voix"
       }
     },
     "switch": {
       "carpet_mode": {
         "name": "Mode tapis"
+      },
+      "do_not_disturb": {
+        "name": "Ne pas déranger"
+      }
+    },
+    "number": {
+      "volume": {
+        "name": "Volume"
+      }
+    },
+    "time": {
+      "dnd_start": {
+        "name": "Début Ne pas déranger"
+      },
+      "dnd_end": {
+        "name": "Fin Ne pas déranger"
       }
     }
   }

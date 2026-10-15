@@ -17,6 +17,15 @@
         "state": {
           "offline": "mdi:wifi-off"
         }
+      },
+      "filter_life": {
+        "default": "mdi:air-filter"
+      },
+      "side_brush_life": {
+        "default": "mdi:brush"
+      },
+      "main_brush_life": {
+        "default": "mdi:broom"
       }
     },
     "binary_sensor": {
@@ -33,11 +42,39 @@
         "state": {
           "off": "mdi:water-off"
         }
+      },
+      "voice": {
+        "default": "mdi:account-voice"
       }
     },
     "switch": {
       "carpet_mode": {
         "default": "mdi:rug"
+      },
+      "do_not_disturb": {
+        "default": "mdi:bell-sleep",
+        "state": {
+          "off": "mdi:bell"
+        }
+      }
+    },
+    "number": {
+      "volume": {
+        "default": "mdi:volume-high",
+        "range": {
+          "0": "mdi:volume-off",
+          "1": "mdi:volume-low",
+          "50": "mdi:volume-medium",
+          "80": "mdi:volume-high"
+        }
+      }
+    },
+    "time": {
+      "dnd_start": {
+        "default": "mdi:clock-start"
+      },
+      "dnd_end": {
+        "default": "mdi:clock-end"
       }
     }
   }

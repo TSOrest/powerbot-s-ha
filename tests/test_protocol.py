@@ -21,7 +21,32 @@ WATER = {"off": 0, "low": 1, "normal": 2, "high": 3}
         (protocol.set_suction(3, WATER["low"]), "AA10B8000000000000022204030001010B"),
         (protocol.carpet_mode(False), "AA0DB800000000000002220C000B"),
         (protocol.carpet_mode(True), "AA0DB800000000000002220C010A"),
+        (protocol.locate(), "AA11B80000000000000335070000000000F8"),
+        (protocol.volume(50), "AA0DB800000000000002220A32DB"),
+        (protocol.do_not_disturb(True, (22, 0), (8, 0)), "AA11B80000000000000222060116000800EE"),
+        (protocol.select_voice(1), "AA0DB800000000000002220B010B"),
+        (protocol.query_work_state(), "AA0CB800000000000003320106"),
+        (protocol.query_dnd(), "AA0CB800000000000003320502"),
+        (protocol.query_voice(), "AA0BB8000000000000033604"),
     ],
 )
 def test_frames(frame: str, expected: str) -> None:
     assert frame == expected
+
+
+def test_parse_replies() -> None:
+    from datetime import time
+
+    from .conftest import REPLIES
+
+    work = protocol.parse_work_state(REPLIES[protocol.query_work_state()])
+    assert work == protocol.WorkState(fan=1, water=3, volume=99, carpet=True)
+    dnd = protocol.parse_dnd(REPLIES[protocol.query_dnd()])
+    assert dnd == protocol.DoNotDisturb(enabled=True, start=time(22, 0), end=time(8, 0))
+    assert protocol.parse_voice(REPLIES[protocol.query_voice()]) == 128
+
+
+@pytest.mark.parametrize("reply", [None, "", "zz", "aa0cb8", "aa0cb800000000000103368082"])
+def test_parse_rejects_other_frames(reply) -> None:
+    assert protocol.parse_work_state(reply) is None
+    assert protocol.parse_dnd(reply) is None

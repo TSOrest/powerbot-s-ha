@@ -81,6 +81,15 @@
           "online": "Online",
           "offline": "Offline"
         }
+      },
+      "filter_life": {
+        "name": "Filter"
+      },
+      "side_brush_life": {
+        "name": "Seitenbürste"
+      },
+      "main_brush_life": {
+        "name": "Hauptbürste"
       }
     },
     "binary_sensor": {
@@ -100,11 +109,30 @@
           "normal": "Normal",
           "high": "Hoch"
         }
+      },
+      "voice": {
+        "name": "Sprache"
       }
     },
     "switch": {
       "carpet_mode": {
         "name": "Teppichmodus"
+      },
+      "do_not_disturb": {
+        "name": "Nicht stören"
+      }
+    },
+    "number": {
+      "volume": {
+        "name": "Lautstärke"
+      }
+    },
+    "time": {
+      "dnd_start": {
+        "name": "Beginn Nicht stören"
+      },
+      "dnd_end": {
+        "name": "Ende Nicht stören"
       }
     }
   }

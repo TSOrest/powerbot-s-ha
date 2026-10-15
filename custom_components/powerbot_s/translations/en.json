@@ -81,6 +81,15 @@
           "online": "Online",
           "offline": "Offline"
         }
+      },
+      "filter_life": {
+        "name": "Filter"
+      },
+      "side_brush_life": {
+        "name": "Side brush"
+      },
+      "main_brush_life": {
+        "name": "Main brush"
       }
     },
     "binary_sensor": {
@@ -100,11 +109,30 @@
           "normal": "Normal",
           "high": "High"
         }
+      },
+      "voice": {
+        "name": "Voice"
       }
     },
     "switch": {
       "carpet_mode": {
         "name": "Carpet mode"
+      },
+      "do_not_disturb": {
+        "name": "Do not disturb"
+      }
+    },
+    "number": {
+      "volume": {
+        "name": "Volume"
+      }
+    },
+    "time": {
+      "dnd_start": {
+        "name": "Do not disturb start"
+      },
+      "dnd_end": {
+        "name": "Do not disturb end"
       }
     }
   }
