@@ -140,21 +140,95 @@ def _colour(value: int, room_map: bool) -> tuple[int, int, int] | None:
     return None
 
 
-def render_png(grid: Grid, room_map: bool | None = None, scale: int = 2) -> bytes:
+Box = tuple[int, int, int, int]
+
+
+@dataclass(frozen=True)
+class Overlays:
+    """Virtual walls (x1 y1 x2 y2) and no-go / no-mop zones (two corners)."""
+
+    walls: tuple[Box, ...] = ()
+    no_go: tuple[Box, ...] = ()
+    no_mop: tuple[Box, ...] = ()
+
+
+def parse_boxes(text: Any) -> tuple[Box, ...]:
+    """Groups of four grid coordinates from a "line ..." or "forbid_zone ..." string."""
+    if isinstance(text, str) and text.startswith('"'):
+        try:
+            text = json.loads(text)
+        except ValueError:
+            return ()
+    if not isinstance(text, str):
+        return ()
+    numbers = [int(token) for token in text.split() if token.lstrip("-").isdigit()]
+    return tuple(
+        (numbers[i], numbers[i + 1], numbers[i + 2], numbers[i + 3])
+        for i in range(0, len(numbers) - 3, 4)
+    )
+
+
+_NO_GO = (230, 60, 60)
+_NO_MOP = (60, 150, 230)
+_VIRTUAL_WALL = (200, 30, 30)
+
+
+def render_png(
+    grid: Grid,
+    room_map: bool | None = None,
+    overlays: Overlays | None = None,
+    scale: int = 2,
+) -> bytes:
     """Draw the grid as an RGBA PNG with y up; rooms are coloured on a room map."""
     if room_map is None:
         room_map = grid.pixels[:1] == bytes([ROOM_MAP_MARK])
+    width, height = grid.width, grid.height
     palette: dict[int, bytes] = {}
-    rows = []
-    for y in range(grid.height - 1, -1, -1):  # PNG rows go top-down
-        line = bytearray()
-        for value in grid.pixels[y * grid.width : (y + 1) * grid.width]:
+    image = bytearray()
+    for y in range(height - 1, -1, -1):  # image rows go top-down
+        for value in grid.pixels[y * width : (y + 1) * width]:
             if (pixel := palette.get(value)) is None:
                 rgb = _colour(value, room_map)
                 pixel = palette[value] = bytes((*rgb, 255)) if rgb else b"\0\0\0\0"
-            line += pixel * scale
+            image += pixel
+
+    def put(x: int, y: int, rgb: tuple[int, int, int], alpha: float) -> None:
+        col, row = x - grid.left, height - 1 - (y - grid.bottom)
+        if 0 <= col < width and 0 <= row < height:
+            i = 4 * (row * width + col)
+            if image[i + 3] == 0:  # outside the map: just the overlay colour
+                image[i : i + 3] = bytes(rgb)
+            else:
+                for c in range(3):
+                    image[i + c] = round(rgb[c] * alpha + image[i + c] * (1 - alpha))
+            image[i + 3] = max(image[i + 3], round(255 * alpha))
+
+    if overlays:
+        for zones, rgb in ((overlays.no_mop, _NO_MOP), (overlays.no_go, _NO_GO)):
+            for x1, y1, x2, y2 in zones:
+                top = grid.bottom + height - 1
+                right = grid.left + width - 1
+                for y in range(max(min(y1, y2), grid.bottom), min(max(y1, y2), top) + 1):
+                    for x in range(max(min(x1, x2), grid.left), min(max(x1, x2), right) + 1):
+                        edge = x in (x1, x2) or y in (y1, y2)
+                        put(x, y, rgb, 1.0 if edge else 0.35)
+        for x1, y1, x2, y2 in overlays.walls:
+            steps = min(max(abs(x2 - x1), abs(y2 - y1), 1), 4 * (width + height))
+            for step in range(steps + 1):
+                put(
+                    round(x1 + (x2 - x1) * step / steps),
+                    round(y1 + (y2 - y1) * step / steps),
+                    _VIRTUAL_WALL,
+                    1.0,
+                )
+
+    rows = []
+    for row in range(height):
+        line = image[4 * row * width : 4 * (row + 1) * width]
+        if scale > 1:
+            line = b"".join(line[i : i + 4] * scale for i in range(0, len(line), 4))
         rows.extend([b"\0" + bytes(line)] * scale)
-    return _png(grid.width * scale, grid.height * scale, b"".join(rows))
+    return _png(width * scale, height * scale, b"".join(rows))
 
 
 def _png(width: int, height: int, raw: bytes) -> bytes:

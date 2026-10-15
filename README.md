@@ -39,7 +39,7 @@ Custom Home Assistant integration for the **Samsung VR7700 (POWERbot-S)** robot 
 | Cleaning mode | `sensor` | Mode of the current or last clean (auto, edge, spot, rooms, zones, …) |
 | Cleaned area / Cleaning time | `sensor` | Area (m²) and time (min) of the current or last clean |
 | Error | `sensor` | What the robot reports is wrong (dustbin missing, brush tangled, …); `Error code` is a disabled diagnostic sensor with the raw code |
-| Map | `image` | The map from the app, with rooms coloured; the `rooms` attribute lists room ids and names |
+| Map | `image` | The map from the app, with rooms coloured, no-go zones in red, no-mop zones in blue and virtual walls as red lines; the `rooms` attribute lists room ids and names |
 | Room N name | `text` | Renames a room; the app shows the same name, and `clean_rooms` accepts it |
 | Schedule N | `switch` | Turns a schedule made in the app on or off; attributes show days, start, duration, mode, suction and water |
 
@@ -230,7 +230,7 @@ logger:
 | Режим прибирання | `sensor` | Режим поточного або останнього прибирання (авто, вздовж стін, точкове, кімнати, зони, …) |
 | Прибрана площа / Час прибирання | `sensor` | Площа (м²) і час (хв) поточного або останнього прибирання |
 | Помилка | `sensor` | Що робот повідомляє як проблему (немає контейнера, заплутана щітка, …); «Код помилки» — вимкнений діагностичний сенсор із сирим кодом |
-| Карта | `image` | Карта із застосунку з розфарбованими кімнатами; атрибут `rooms` містить номери й назви кімнат |
+| Карта | `image` | Карта із застосунку: кімнати різними кольорами, заборонені зони червоним, зони без миття синім, віртуальні стіни червоними лініями; атрибут `rooms` містить номери й назви кімнат |
 | Назва кімнати N | `text` | Перейменовує кімнату; застосунок показує ту саму назву, і `clean_rooms` її приймає |
 | Розклад N | `switch` | Вмикає або вимикає розклад, створений у застосунку; атрибути показують дні, початок, тривалість, режим, всмоктування і воду |
 

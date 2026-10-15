@@ -310,6 +310,12 @@ class PowerBotApiClient:
             data = data.get("data", data.get("map"))
         return (data if isinstance(data, str) else None), names
 
+    async def async_get_overlay(self, device_id: str, user_id: str, kind: str) -> Any:
+        """Return an overlay string: kind is virtual, forbidden or mop/forbidden."""
+        return await self._midea_request(
+            "POST", f"/v2/app2pro/m7/{kind}/get", json={"deviceId": device_id, "userId": user_id}
+        )
+
     async def async_rename_room(
         self, device_id: str, user_id: str, room_id: int, name: str
     ) -> None:

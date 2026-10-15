@@ -96,6 +96,7 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.map_grid: robot_map.Grid | None = None
         self.room_grid: robot_map.Grid | None = None
         self.rooms: dict[int, str] = {}
+        self.overlays = robot_map.Overlays()
         self.map_updated: datetime | None = None
         # Cleaning schedules stored on the robot: task id -> schedule
         self.schedules: dict[int, protocol.Schedule] = {}
@@ -214,8 +215,14 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return
         map_grid = robot_map.decode_map(map_text)
         room_grid, room_ids = robot_map.decode_rooms(room_text)
-        if (map_grid, room_grid) != (self.map_grid, self.room_grid) and (map_grid or room_grid):
-            self.map_grid, self.room_grid = map_grid, room_grid
+        overlays = robot_map.Overlays(
+            walls=await self._async_read_overlay("virtual"),
+            no_go=await self._async_read_overlay("forbidden"),
+            no_mop=await self._async_read_overlay("mop/forbidden"),
+        )
+        new = (map_grid, room_grid, overlays)
+        if new != (self.map_grid, self.room_grid, self.overlays) and (map_grid or room_grid):
+            self.map_grid, self.room_grid, self.overlays = new
             self.map_updated = dt_util.utcnow()
         self.rooms = robot_map.room_names(room_ids, names)
 
@@ -259,6 +266,18 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         await self.async_send(protocol.schedule_enabled(task_id, enabled))
         if schedule := self.schedules.get(task_id):
             self.schedules[task_id] = replace(schedule, enabled=enabled)
+
+    async def _async_read_overlay(self, kind: str) -> tuple[robot_map.Box, ...]:
+        """Virtual walls or no-go zones; none if the cloud has none or fails."""
+        assert self._owner_id
+        try:
+            text = await self.client.async_get_overlay(self.device_id, self._owner_id, kind)
+        except PowerBotAuthError:
+            raise
+        except PowerBotApiError as err:
+            _LOGGER.debug("Could not read %s: %s", kind, err)
+            return ()
+        return robot_map.parse_boxes(text)
 
     async def async_rename_room(self, room_id: int, name: str) -> None:
         """Rename a room in the cloud so the app shows the same name."""
