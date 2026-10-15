@@ -1,30 +1,89 @@
 {
-    "config": {
-          "step": {
-                  "user": {
-                            "title": "POWERbot-S — Sign In",
-                            "description": "Enter your POWERbot-S app account credentials.",
-                            "data": {
-                                        "email": "Email",
-                                        "password": "Password"
-                            }
-                  },
-                  "device_id": {
-                            "title": "Device ID",
-                            "description": "Enter the Device ID of your robot vacuum. Example: {hint}",
-                            "data": {
-                                        "device_id": "Device ID"
-                            }
-                  }
-          },
-          "error": {
-                  "invalid_auth": "Invalid email or password.",
-                  "cannot_connect": "Could not connect to the server or device.",
-                  "no_devices": "No devices found on this account.",
-                  "unknown": "Unexpected error. Check the logs for details."
-          },
-          "abort": {
-                  "already_configured": "This device is already configured."
-          }
+  "config": {
+    "step": {
+      "user": {
+        "title": "Sign in to POWERbot-S",
+        "description": "Use the same email and password as in the POWERbot-S mobile app.",
+        "data": {
+          "email": "Email",
+          "password": "Password"
+        }
+      },
+      "select_device": {
+        "title": "Choose a robot",
+        "description": "Several robots were found on this account. Choose the one to add.",
+        "data": {
+          "device_id": "Robot"
+        }
+      },
+      "manual": {
+        "title": "Robot ID",
+        "description": "No robots were returned for this account. Enter the Device ID shown in the POWERbot-S app (Settings → Device info).",
+        "data": {
+          "device_id": "Device ID"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Sign in again",
+        "description": "The saved POWERbot-S login no longer works. Enter your account password again.",
+        "data": {
+          "email": "Email",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid email or password.",
+      "cannot_connect": "Could not connect to the POWERbot-S cloud.",
+      "device_not_found": "This robot was not found on the account.",
+      "unknown": "Unexpected error. Check the logs for details."
+    },
+    "abort": {
+      "already_configured": "This robot is already configured.",
+      "reauth_successful": "Re-authentication was successful."
     }
+  },
+  "entity": {
+    "vacuum": {
+      "powerbot": {
+        "state_attributes": {
+          "fan_speed": {
+            "state": {
+              "quiet": "Quiet",
+              "normal": "Normal",
+              "strong": "Strong"
+            }
+          }
+        }
+      }
+    },
+    "sensor": {
+      "status": {
+        "name": "Status"
+      },
+      "fan_speed": {
+        "name": "Fan speed",
+        "state": {
+          "quiet": "Quiet",
+          "normal": "Normal",
+          "strong": "Strong"
+        }
+      },
+      "connection": {
+        "name": "Connection",
+        "state": {
+          "online": "Online",
+          "offline": "Offline"
+        }
+      }
+    },
+    "binary_sensor": {
+      "cleaning": {
+        "name": "Cleaning"
+      },
+      "docked": {
+        "name": "Docked"
+      }
+    }
+  }
 }

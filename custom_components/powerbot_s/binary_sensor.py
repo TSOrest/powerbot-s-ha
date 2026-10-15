@@ -1,131 +1,94 @@
 """Binary sensor platform for POWERbot-S."""
 from __future__ import annotations
 
-import logging
+from collections.abc import Callable
+from dataclasses import dataclass
 
 from homeassistant.components.binary_sensor import (
-    BinarySensorEntity,
     BinarySensorDeviceClass,
+    BinarySensorEntity,
+    BinarySensorEntityDescription,
 )
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .const import DOMAIN, CONF_DEVICE_ID
-from .coordinator import PowerBotDataUpdateCoordinator
+from .const import CLEANING_STATES, DOCKED_STATES, ERROR_STATES
+from .coordinator import PowerBotConfigEntry, PowerBotDataUpdateCoordinator
+from .entity import PowerBotEntity
 
-_LOGGER = logging.getLogger(__name__)
+PARALLEL_UPDATES = 0
 
-# State strings that map to the "error" condition
-_ERROR_STATES = {"error", "fault"}
 
-# State strings considered "online/cleaning" for the cleaning binary sensor
-_CLEANING_STATES = {
-    "cleaning", "sweeping", "mopping", "spot", "auto_cleaning", "wall_follow"
-}
+@dataclass(frozen=True, kw_only=True)
+class PowerBotBinarySensorDescription(BinarySensorEntityDescription):
+    """Describes a POWERbot-S binary sensor."""
 
-# State strings considered "docked"
-_DOCKED_STATES = {"charging_finish", "charging", "docked"}
+    is_on_fn: Callable[[str, PowerBotDataUpdateCoordinator], bool]
+    always_available: bool = False
+
+
+def _matches(keys: tuple[str, ...]) -> Callable[[str, PowerBotDataUpdateCoordinator], bool]:
+    return lambda state, _: any(key in state for key in keys)
+
+
+BINARY_SENSORS: tuple[PowerBotBinarySensorDescription, ...] = (
+    PowerBotBinarySensorDescription(
+        key="error",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        is_on_fn=_matches(ERROR_STATES),
+    ),
+    PowerBotBinarySensorDescription(
+        key="cleaning",
+        translation_key="cleaning",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        is_on_fn=_matches(CLEANING_STATES),
+    ),
+    PowerBotBinarySensorDescription(
+        key="docked",
+        translation_key="docked",
+        device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
+        is_on_fn=_matches(DOCKED_STATES),
+    ),
+    PowerBotBinarySensorDescription(
+        key="online",
+        device_class=BinarySensorDeviceClass.CONNECTIVITY,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        is_on_fn=lambda _, coordinator: coordinator.last_update_success,
+        always_available=True,
+    ),
+)
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    entry: PowerBotConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up binary sensor entities."""
-    coordinator: PowerBotDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities([
-          PowerBotErrorBinarySensor(coordinator, entry),
-          PowerBotCleaningBinarySensor(coordinator, entry),
-          PowerBotDockedBinarySensor(coordinator, entry),
-          PowerBotOnlineBinarySensor(coordinator, entry),
-    ])
+    coordinator = entry.runtime_data
+    async_add_entities(
+        PowerBotBinarySensor(coordinator, description) for description in BINARY_SENSORS
+    )
 
 
-class _PowerBotBinarySensorBase(
-    CoordinatorEntity[PowerBotDataUpdateCoordinator], BinarySensorEntity
-):
-    """Base class for POWERbot binary sensors."""
+class PowerBotBinarySensor(PowerBotEntity, BinarySensorEntity):
+    """A POWERbot-S binary sensor."""
 
-    _attr_has_entity_name = True
+    entity_description: PowerBotBinarySensorDescription
 
-    def __init__(self, coordinator: PowerBotDataUpdateCoordinator, entry: ConfigEntry) -> None:
-              super().__init__(coordinator)
-              self._device_id: str = entry.data[CONF_DEVICE_ID]
+    def __init__(
+        self,
+        coordinator: PowerBotDataUpdateCoordinator,
+        description: PowerBotBinarySensorDescription,
+    ) -> None:
+        super().__init__(coordinator, description.key)
+        self.entity_description = description
 
     @property
-    def device_info(self) -> dict:
-              return {"identifiers": {(DOMAIN, self._device_id)}}
-
-    def _state_lower(self) -> str:
-              return (self.coordinator.data.get("state") or "").lower()
-
-
-class PowerBotErrorBinarySensor(_PowerBotBinarySensorBase):
-    """True when the robot reports an error or fault state."""
-
-    _attr_name = "Error"
-    _attr_device_class = BinarySensorDeviceClass.PROBLEM
-    _attr_icon = "mdi:alert-circle"
-
-    def __init__(self, coordinator, entry: ConfigEntry) -> None:
-              super().__init__(coordinator, entry)
-              self._attr_unique_id = f"powerbot_{self._device_id}_error"
+    def available(self) -> bool:
+        return self.entity_description.always_available or super().available
 
     @property
     def is_on(self) -> bool:
-              state = self._state_lower()
-              return any(err in state for err in _ERROR_STATES)
-
-
-class PowerBotCleaningBinarySensor(_PowerBotBinarySensorBase):
-    """True when the robot is actively cleaning."""
-
-    _attr_name = "Cleaning"
-    _attr_device_class = BinarySensorDeviceClass.RUNNING
-    _attr_icon = "mdi:robot-vacuum"
-
-    def __init__(self, coordinator, entry: ConfigEntry) -> None:
-              super().__init__(coordinator, entry)
-              self._attr_unique_id = f"powerbot_{self._device_id}_cleaning"
-
-    @property
-    def is_on(self) -> bool:
-              state = self._state_lower()
-              return any(cs in state for cs in _CLEANING_STATES)
-
-
-class PowerBotDockedBinarySensor(_PowerBotBinarySensorBase):
-    """True when the robot is in the charging dock."""
-
-    _attr_name = "Docked"
-    _attr_device_class = BinarySensorDeviceClass.BATTERY_CHARGING
-    _attr_icon = "mdi:home-battery"
-
-    def __init__(self, coordinator, entry: ConfigEntry) -> None:
-              super().__init__(coordinator, entry)
-              self._attr_unique_id = f"powerbot_{self._device_id}_docked"
-
-    @property
-    def is_on(self) -> bool:
-              state = self._state_lower()
-              return any(ds in state for ds in _DOCKED_STATES)
-
-
-class PowerBotOnlineBinarySensor(_PowerBotBinarySensorBase):
-    """True when the coordinator was able to reach the cloud API on last poll."""
-
-    _attr_name = "Online"
-    _attr_device_class = BinarySensorDeviceClass.CONNECTIVITY
-    _attr_icon = "mdi:cloud-check"
-
-    def __init__(self, coordinator, entry: ConfigEntry) -> None:
-              super().__init__(coordinator, entry)
-              self._attr_unique_id = f"powerbot_{self._device_id}_online"
-
-    @property
-    def is_on(self) -> bool:
-              return self.coordinator.last_update_success
-      
+        return self.entity_description.is_on_fn(self.state_str, self.coordinator)

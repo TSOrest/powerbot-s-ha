@@ -1,0 +1,49 @@
+"""Setup and entity tests."""
+from homeassistant.config_entries import ConfigEntryState
+from homeassistant.core import HomeAssistant
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+from custom_components.powerbot_s.api import PowerBotAuthError
+from custom_components.powerbot_s.const import CONF_DEVICE_ID, DOMAIN
+from custom_components.powerbot_s.vacuum import HEX_START_CLEANING
+
+
+def _entry(hass: HomeAssistant) -> MockConfigEntry:
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Kitchen",
+        unique_id="111",
+        data={"email": "a@b.c", "password": "pw", CONF_DEVICE_ID: "111", "region": "eu"},
+    )
+    entry.add_to_hass(hass)
+    return entry
+
+
+async def test_setup_creates_entities(hass: HomeAssistant, mock_api) -> None:
+    entry = _entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert entry.state is ConfigEntryState.LOADED
+
+    vacuum = hass.states.get("vacuum.kitchen")
+    assert vacuum.state == "docked"
+    assert vacuum.attributes["fan_speed"] == "strong"
+    assert hass.states.get("sensor.kitchen_battery").state == "87"
+    assert hass.states.get("sensor.kitchen_fan_speed").state == "strong"
+    assert hass.states.get("sensor.kitchen_status").state == "charging_finish"
+    assert hass.states.get("binary_sensor.kitchen_docked").state == "on"
+    assert hass.states.get("binary_sensor.kitchen_cleaning").state == "off"
+
+    await hass.services.async_call("vacuum", "start", {"entity_id": "vacuum.kitchen"}, blocking=True)
+    mock_api["send"].assert_awaited_with("111", HEX_START_CLEANING, wait_timeout=30)
+
+    assert await hass.config_entries.async_unload(entry.entry_id)
+
+
+async def test_auth_failure_starts_reauth(hass: HomeAssistant, mock_api) -> None:
+    mock_api["state"].side_effect = PowerBotAuthError("expired")
+    entry = _entry(hass)
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert entry.state is ConfigEntryState.SETUP_ERROR
+    assert any(f["context"]["source"] == "reauth" for f in hass.config_entries.flow.async_progress())

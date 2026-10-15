@@ -1,9 +1,9 @@
 # Samsung POWERbot-S for Home Assistant
 
-[![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge&logo=homeassistantcommunitystore&logoColor=white)](https://github.com/hacs/integration)
+[![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?logo=homeassistantcommunitystore&logoColor=white)](https://github.com/hacs/integration)
 [![Validate](https://github.com/TSOrest/powerbot-s-ha/actions/workflows/validate.yml/badge.svg)](https://github.com/TSOrest/powerbot-s-ha/actions/workflows/validate.yml)
-[![GitHub Release](https://img.shields.io/github/release/TSOrest/powerbot-s-ha.svg?style=for-the-badge&color=blue)](https://github.com/TSOrest/powerbot-s-ha/releases)
-[![Built with Claude AI](https://img.shields.io/badge/Built_with-Claude_AI-FF6B35?style=for-the-badge)](https://anthropic.com)
+[![GitHub Release](https://img.shields.io/github/v/release/TSOrest/powerbot-s-ha?color=blue)](https://github.com/TSOrest/powerbot-s-ha/releases)
+[![Built with Claude AI](https://img.shields.io/badge/Built_with-Claude_AI-FF6B35)](https://anthropic.com)
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=TSOrest&repository=powerbot-s-ha&category=integration)
 
@@ -13,49 +13,48 @@
 
 ## English
 
-Custom Home Assistant integration for the **Samsung VR7700 (POWERbot-S)** robot vacuum cleaner, using the reverse-engineered **mzrobo.com** cloud API.
+Custom Home Assistant integration for the **Samsung VR7700 (POWERbot-S)** robot vacuum, using the **mzrobo.com** cloud that the POWERbot-S mobile app talks to.
 
 ### Features
 
 | Entity | Type | Description |
 |--------|------|-------------|
 | Vacuum | `vacuum` | Start, stop, pause, return to dock, spot clean, fan speed |
-| Status | `sensor` | Raw state string from cloud (`cleaning`, `charging_finish`, …) |
+| Status | `sensor` | Raw state string from the cloud (`cleaning`, `charging_finish`, …) |
 | Battery | `sensor` | Battery level (%) |
-| Fan Speed | `sensor` | Current suction level (quiet / normal / strong) |
-| Connection | `sensor` | online / offline |
-| Error | `binary_sensor` | `on` when robot reports an error |
-| Cleaning | `binary_sensor` | `on` when actively cleaning |
-| Docked | `binary_sensor` | `on` when in charging dock |
-| Online | `binary_sensor` | `on` when cloud API is reachable |
+| Fan speed | `sensor` | Current suction level (quiet / normal / strong) |
+| Connection | `sensor` | online / offline (diagnostic) |
+| Problem | `binary_sensor` | `on` when the robot reports an error |
+| Cleaning | `binary_sensor` | `on` while cleaning |
+| Docked | `binary_sensor` | `on` while in the charging dock |
+| Connectivity | `binary_sensor` | `on` when the cloud is reachable (diagnostic) |
 
 ### Requirements
 
-- Home Assistant **2024.1** or newer
-- An account in the **POWERbot-S** Android/iOS app
-- Your robot's **Device ID** (see below)
+- Home Assistant **2025.2** or newer (2026.3+ shows the integration icon)
+- An account in the **POWERbot-S** Android/iOS app with your robot added to it
 
 ### Installation via HACS
 
-1. Open HACS → Integrations → **Custom repositories**
-2. Add `https://github.com/TSOrest/powerbot-s-ha` as type **Integration**
-3. Find **Samsung POWERbot-S** and click **Download**
-4. Restart Home Assistant
-5. Go to **Settings → Devices & Services → Add Integration → Samsung POWERbot-S**
+1. Click the **Open your Home Assistant instance** button above, or in HACS open **⋮ → Custom repositories** and add `https://github.com/TSOrest/powerbot-s-ha` as type **Integration**
+2. Find **Samsung POWERbot-S** and click **Download**
+3. Restart Home Assistant
 
-### Manual Installation
+### Manual installation
 
-1. Copy the `custom_components/powerbot_s/` folder to your HA `config/custom_components/` directory
+1. Copy `custom_components/powerbot_s/` to your HA `config/custom_components/` folder
 2. Restart Home Assistant
-3. Add the integration via the UI
 
-### Finding Your Device ID
+### Setup
 
-1. Open the **POWERbot-S** app
-2. Go to the robot's **Settings → Device Info**
-3. The Device ID is a long number like `1870169732145270786`
+1. Go to **Settings → Devices & services → Add integration → Samsung POWERbot-S**
+2. Sign in with the email and password from the POWERbot-S app
 
-Alternatively, enable debug logging and look in the HA logs:
+The robot on your account is added automatically. If the account has several robots, you pick one from a list (add the integration again for each robot). If the stored login ever stops working, Home Assistant asks you to sign in again.
+
+### Troubleshooting
+
+Enable debug logging and check the HA log:
 
 ```yaml
 logger:
@@ -68,49 +67,48 @@ logger:
 
 ## Українська
 
-Інтеграція для Home Assistant для **Samsung VR7700 (POWERbot-S)** (робот-пилосос), що використовує реверс-інженерований хмарний API **mzrobo.com**.
+Інтеграція Home Assistant для робота-пилососа **Samsung VR7700 (POWERbot-S)**. Працює через хмару **mzrobo.com**, яку використовує мобільний додаток POWERbot-S.
 
 ### Можливості
 
 | Сутність | Тип | Опис |
 |----------|-----|------|
-| Vacuum | `vacuum` | Старт, стоп, пауза, на базу, точкове прибирання, швидкість вентилятора |
-| Status | `sensor` | Рядок стану з хмари (`cleaning`, `charging_finish`, …) |
-| Battery | `sensor` | Рівень заряду (%) |
-| Fan Speed | `sensor` | Поточний рівень всмоктування (тихий / нормальний / сильний) |
-| Connection | `sensor` | онлайн / офлайн |
-| Error | `binary_sensor` | `on` коли робот повідомляє про помилку |
-| Cleaning | `binary_sensor` | `on` під час активного прибирання |
-| Docked | `binary_sensor` | `on` коли на зарядній станції |
-| Online | `binary_sensor` | `on` коли хмарний API доступний |
+| Пилосос | `vacuum` | Старт, стоп, пауза, на базу, точкове прибирання, швидкість вентилятора |
+| Стан | `sensor` | Рядок стану з хмари (`cleaning`, `charging_finish`, …) |
+| Батарея | `sensor` | Рівень заряду (%) |
+| Швидкість вентилятора | `sensor` | Поточний рівень всмоктування (тихо / нормально / сильно) |
+| З'єднання | `sensor` | онлайн / офлайн (діагностика) |
+| Проблема | `binary_sensor` | `on`, коли робот повідомляє про помилку |
+| Прибирання | `binary_sensor` | `on` під час прибирання |
+| На базі | `binary_sensor` | `on`, коли робот на зарядній станції |
+| Підключення | `binary_sensor` | `on`, коли хмара доступна (діагностика) |
 
 ### Вимоги
 
-- Home Assistant **2024.1** або новішийей
-- Фейіковий запис у додатку **POWERbot-S** для Android/iOS
-- **Device ID** вашого робота (дивіться нижче)
+- Home Assistant **2025.2** або новіший (іконка інтеграції показується з 2026.3)
+- Акаунт у додатку **POWERbot-S** для Android/iOS, до якого додано робота
 
 ### Встановлення через HACS
 
-1. Відкрийте HACS → Інтеграції → **Користувацькі репозиторії**
-2. Додайте `https://github.com/TSOrest/powerbot-s-ha` як тип **Integration**
-3. Знайдіть **Samsung POWERbot-S** та натисніть **Завантажити**
-4. Перезапустіть Home Assistant
-5. Перейдіть до **Налаштування → Пристрої та служби → Додати інтеграцію → Samsung POWERbot-S**
+1. Натисніть кнопку **Open your Home Assistant instance** вище, або в HACS відкрийте **⋮ → Користувацькі репозиторії** і додайте `https://github.com/TSOrest/powerbot-s-ha` як тип **Integration**
+2. Знайдіть **Samsung POWERbot-S** і натисніть **Завантажити**
+3. Перезапустіть Home Assistant
 
 ### Ручне встановлення
 
-1. Скопіюйте папку `custom_components/powerbot_s/` до `config/custom_components/` вашого HA
+1. Скопіюйте `custom_components/powerbot_s/` до папки `config/custom_components/` вашого HA
 2. Перезапустіть Home Assistant
-3. Додайте інтеграцію через інтерфейс
 
-### Пошук Device ID
+### Налаштування
 
-1. Відкрийте додаток **POWERbot-S**
-2. Перейдіть до **Налаштувань → Інформація про пристрій**
-3. Device ID — це довгий номер, наприклад `1870169732145270786`
+1. Відкрийте **Налаштування → Пристрої та служби → Додати інтеграцію → Samsung POWERbot-S**
+2. Увійдіть з email і паролем від додатку POWERbot-S
 
-Або увімкніть налагоджувальне логування та перевірте логи HA:
+Робот з вашого акаунта додається автоматично. Якщо на акаунті кілька роботів, ви обираєте одного зі списку (для кожного робота інтеграцію додають окремо). Якщо збережений вхід перестане працювати, Home Assistant попросить увійти знову.
+
+### Діагностика
+
+Увімкніть налагоджувальне логування і перегляньте журнал HA:
 
 ```yaml
 logger:

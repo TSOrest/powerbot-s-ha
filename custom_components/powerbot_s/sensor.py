@@ -1,127 +1,104 @@
 """Sensor platform for POWERbot-S."""
 from __future__ import annotations
 
-import logging
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
 
 from homeassistant.components.sensor import (
-    SensorEntity,
     SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import PERCENTAGE
+from homeassistant.const import PERCENTAGE, EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .const import DOMAIN, CONF_DEVICE_ID, FAN_LEVEL_MAP
-from .coordinator import PowerBotDataUpdateCoordinator
+from .const import FAN_LEVEL_MAP, FAN_SPEEDS
+from .coordinator import PowerBotConfigEntry, PowerBotDataUpdateCoordinator
+from .entity import PowerBotEntity
 
-_LOGGER = logging.getLogger(__name__)
+PARALLEL_UPDATES = 0
+
+
+@dataclass(frozen=True, kw_only=True)
+class PowerBotSensorDescription(SensorEntityDescription):
+    """Describes a POWERbot-S sensor."""
+
+    value_fn: Callable[[PowerBotDataUpdateCoordinator], Any]
+
+
+def _fan_speed(coordinator: PowerBotDataUpdateCoordinator) -> str | None:
+    level = coordinator.data.get("fanLevel")
+    return FAN_LEVEL_MAP.get(str(level)) if level is not None else None
+
+
+def _connection(coordinator: PowerBotDataUpdateCoordinator) -> str:
+    if coordinator.last_update_success and coordinator.data.get("connected", True):
+        return "online"
+    return "offline"
+
+
+SENSORS: tuple[PowerBotSensorDescription, ...] = (
+    PowerBotSensorDescription(
+        key="status",
+        translation_key="status",
+        value_fn=lambda c: c.data.get("state"),
+    ),
+    PowerBotSensorDescription(
+        key="battery",
+        device_class=SensorDeviceClass.BATTERY,
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda c: c.data.get("batteryLevel"),
+    ),
+    PowerBotSensorDescription(
+        key="fan_speed",
+        translation_key="fan_speed",
+        device_class=SensorDeviceClass.ENUM,
+        options=FAN_SPEEDS,
+        value_fn=_fan_speed,
+    ),
+    PowerBotSensorDescription(
+        key="connection",
+        translation_key="connection",
+        device_class=SensorDeviceClass.ENUM,
+        options=["online", "offline"],
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_connection,
+    ),
+)
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    entry: PowerBotConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up sensor entities."""
-    coordinator: PowerBotDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities([
-        PowerBotStateSensor(coordinator, entry),
-        PowerBotBatterySensor(coordinator, entry),
-        PowerBotFanSpeedSensor(coordinator, entry),
-        PowerBotConnectedSensor(coordinator, entry),
-    ])
+    coordinator = entry.runtime_data
+    async_add_entities(PowerBotSensor(coordinator, description) for description in SENSORS)
 
 
-class _PowerBotSensorBase(
-    CoordinatorEntity[PowerBotDataUpdateCoordinator], SensorEntity
-):
-    """Base class for POWERbot sensors."""
+class PowerBotSensor(PowerBotEntity, SensorEntity):
+    """A POWERbot-S sensor."""
 
-    _attr_has_entity_name = True
+    entity_description: PowerBotSensorDescription
 
-    def __init__(self, coordinator: PowerBotDataUpdateCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator)
-        self._device_id: str = entry.data[CONF_DEVICE_ID]
+    def __init__(
+        self,
+        coordinator: PowerBotDataUpdateCoordinator,
+        description: PowerBotSensorDescription,
+    ) -> None:
+        super().__init__(coordinator, description.key)
+        self.entity_description = description
 
     @property
-    def device_info(self) -> dict:
-        return {"identifiers": {(DOMAIN, self._device_id)}}
-
-
-class PowerBotStateSensor(_PowerBotSensorBase):
-    """Raw state string from the cloud (e.g. 'cleaning', 'charging_finish')."""
-
-    _attr_name = "Status"
-    _attr_icon = "mdi:robot-vacuum"
-
-    def __init__(self, coordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry)
-        self._attr_unique_id = f"powerbot_{self._device_id}_status"
+    def available(self) -> bool:
+        # The connection sensor reports "offline" instead of becoming unavailable.
+        return self.entity_description.key == "connection" or super().available
 
     @property
-    def native_value(self) -> str | None:
-        return self.coordinator.data.get("state")
-
-    @property
-    def extra_state_attributes(self) -> dict:
-        """Expose full data dict as extra attributes."""
-        data = dict(self.coordinator.data)
-        data.pop("state", None)
-        data.pop("batteryLevel", None)
-        return data
-
-
-class PowerBotBatterySensor(_PowerBotSensorBase):
-    """Battery level sensor."""
-
-    _attr_name = "Battery"
-    _attr_native_unit_of_measurement = PERCENTAGE
-    _attr_device_class = SensorDeviceClass.BATTERY
-    _attr_state_class = SensorStateClass.MEASUREMENT
-    _attr_icon = "mdi:battery"
-
-    def __init__(self, coordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry)
-        self._attr_unique_id = f"powerbot_{self._device_id}_battery"
-
-    @property
-    def native_value(self) -> int | None:
-        return self.coordinator.data.get("batteryLevel")
-
-
-class PowerBotFanSpeedSensor(_PowerBotSensorBase):
-    """Current fan / suction speed reported by the robot."""
-
-    _attr_name = "Fan speed"
-    _attr_icon = "mdi:fan"
-
-    def __init__(self, coordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry)
-        self._attr_unique_id = f"powerbot_{self._device_id}_fan_speed"
-
-    @property
-    def native_value(self) -> str | None:
-        level = str(self.coordinator.data.get("fanLevel", "2"))
-        return FAN_LEVEL_MAP.get(level, "normal")
-
-
-class PowerBotConnectedSensor(_PowerBotSensorBase):
-    """Connectivity state — online / offline."""
-
-    _attr_name = "Connection"
-    _attr_icon = "mdi:wifi"
-
-    def __init__(self, coordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry)
-        self._attr_unique_id = f"powerbot_{self._device_id}_connection"
-
-    @property
-    def native_value(self) -> str:
-        """Return 'online' or 'offline' based on coordinator success."""
-        if self.coordinator.last_update_success:
-            connected = self.coordinator.data.get("connected", True)
-            return "online" if connected else "offline"
-        return "offline"
+    def native_value(self) -> Any:
+        return self.entity_description.value_fn(self.coordinator)

@@ -1,1 +1,89 @@
-
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Přihlášení k POWERbot-S",
+        "description": "Použijte stejný e-mail a heslo jako v aplikaci POWERbot-S.",
+        "data": {
+          "email": "E-mail",
+          "password": "Heslo"
+        }
+      },
+      "select_device": {
+        "title": "Vyberte robota",
+        "description": "Na tomto účtu bylo nalezeno více robotů. Vyberte, kterého přidat.",
+        "data": {
+          "device_id": "Robot"
+        }
+      },
+      "manual": {
+        "title": "ID robota",
+        "description": "Pro tento účet nebyli vráceni žádní roboti. Zadejte Device ID z aplikace POWERbot-S (Nastavení → Informace o zařízení).",
+        "data": {
+          "device_id": "Device ID"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Znovu přihlásit",
+        "description": "Uložené přihlášení POWERbot-S již nefunguje. Zadejte znovu heslo.",
+        "data": {
+          "email": "E-mail",
+          "password": "Heslo"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Neplatný e-mail nebo heslo.",
+      "cannot_connect": "Nelze se připojit ke cloudu POWERbot-S.",
+      "device_not_found": "Tento robot nebyl na účtu nalezen.",
+      "unknown": "Neočekávaná chyba. Zkontrolujte protokol."
+    },
+    "abort": {
+      "already_configured": "Tento robot je již nastaven.",
+      "reauth_successful": "Opětovné přihlášení proběhlo úspěšně."
+    }
+  },
+  "entity": {
+    "vacuum": {
+      "powerbot": {
+        "state_attributes": {
+          "fan_speed": {
+            "state": {
+              "quiet": "Tichý",
+              "normal": "Normální",
+              "strong": "Silný"
+            }
+          }
+        }
+      }
+    },
+    "sensor": {
+      "status": {
+        "name": "Stav"
+      },
+      "fan_speed": {
+        "name": "Sací výkon",
+        "state": {
+          "quiet": "Tichý",
+          "normal": "Normální",
+          "strong": "Silný"
+        }
+      },
+      "connection": {
+        "name": "Připojení",
+        "state": {
+          "online": "Online",
+          "offline": "Offline"
+        }
+      }
+    },
+    "binary_sensor": {
+      "cleaning": {
+        "name": "Úklid"
+      },
+      "docked": {
+        "name": "V základně"
+      }
+    }
+  }
+}

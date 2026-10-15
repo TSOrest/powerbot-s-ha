@@ -1,1 +1,89 @@
-
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connexion à POWERbot-S",
+        "description": "Utilisez l'e-mail et le mot de passe de l'application POWERbot-S.",
+        "data": {
+          "email": "E-mail",
+          "password": "Mot de passe"
+        }
+      },
+      "select_device": {
+        "title": "Choisir un robot",
+        "description": "Plusieurs robots ont été trouvés sur ce compte. Choisissez celui à ajouter.",
+        "data": {
+          "device_id": "Robot"
+        }
+      },
+      "manual": {
+        "title": "ID du robot",
+        "description": "Aucun robot n'a été renvoyé pour ce compte. Saisissez le Device ID affiché dans l'application POWERbot-S (Paramètres → Infos appareil).",
+        "data": {
+          "device_id": "Device ID"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Se reconnecter",
+        "description": "La connexion POWERbot-S enregistrée ne fonctionne plus. Saisissez à nouveau votre mot de passe.",
+        "data": {
+          "email": "E-mail",
+          "password": "Mot de passe"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "E-mail ou mot de passe invalide.",
+      "cannot_connect": "Impossible de se connecter au cloud POWERbot-S.",
+      "device_not_found": "Ce robot est introuvable sur le compte.",
+      "unknown": "Erreur inattendue. Consultez les journaux."
+    },
+    "abort": {
+      "already_configured": "Ce robot est déjà configuré.",
+      "reauth_successful": "Reconnexion réussie."
+    }
+  },
+  "entity": {
+    "vacuum": {
+      "powerbot": {
+        "state_attributes": {
+          "fan_speed": {
+            "state": {
+              "quiet": "Silencieux",
+              "normal": "Normal",
+              "strong": "Fort"
+            }
+          }
+        }
+      }
+    },
+    "sensor": {
+      "status": {
+        "name": "État"
+      },
+      "fan_speed": {
+        "name": "Puissance d'aspiration",
+        "state": {
+          "quiet": "Silencieux",
+          "normal": "Normal",
+          "strong": "Fort"
+        }
+      },
+      "connection": {
+        "name": "Connexion",
+        "state": {
+          "online": "En ligne",
+          "offline": "Hors ligne"
+        }
+      }
+    },
+    "binary_sensor": {
+      "cleaning": {
+        "name": "Nettoyage"
+      },
+      "docked": {
+        "name": "Sur la base"
+      }
+    }
+  }
+}

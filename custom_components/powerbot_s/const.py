@@ -1,25 +1,30 @@
 """Constants for the POWERbot-S integration."""
+from __future__ import annotations
+
+from datetime import timedelta
 
 DOMAIN = "powerbot_s"
 
-# Config entry keys
-CONF_EMAIL = "email"
-CONF_PASSWORD = "password"
+MANUFACTURER = "Samsung"
+MODEL = "POWERbot-S (VR7700)"
+
+# Config entry keys (email / password come from homeassistant.const)
 CONF_REGION = "region"
 CONF_DEVICE_ID = "device_id"
 CONF_ACCESS_TOKEN = "access_token"
 CONF_REFRESH_TOKEN = "refresh_token"
 
-# mzrobo.com / MzBots API credentials (from APK)
+SCAN_INTERVAL = timedelta(seconds=30)
+
+# mzrobo.com / MzBots API client id (from APK)
 CLIENT_ID = "ef3450cd49484b40a0a1438ef3a47cb9"
-APP_SECRET = "1537b2f65f1c69f528d0e973"
 
 # Regional API hosts
 REGION_HOSTS = {
-    "na":     "https://naprod.mzrobo.com",
     "eu":     "https://euprod.mzrobo.com",
-    "cn":     "https://api.mzbots.com",
+    "na":     "https://naprod.mzrobo.com",
     "global": "https://global.mzrobo.com",
+    "cn":     "https://api.mzbots.com",
 }
 DEFAULT_REGION = "eu"
 
@@ -27,20 +32,14 @@ DEFAULT_REGION = "eu"
 APP_VERSION = "1.2.1.26101001"
 APP_ENV = "release"
 
-# Robot state strings (from shadow API)
-ROBOT_STATE_CLEANING  = "cleaning"
-ROBOT_STATE_PAUSED    = "paused"
-ROBOT_STATE_DOCKED    = "charging"
-ROBOT_STATE_RETURNING = "returning"
-ROBOT_STATE_IDLE      = "idle"
-ROBOT_STATE_ERROR     = "error"
-
-# Entity attribute names
-ATTR_BATTERY_LEVEL = "battery_level"
-ATTR_STATUS        = "status"
-ATTR_FAN_SPEED     = "fan_speed"
-
-# Fan speed mapping: API "fanLevel" value → human-readable label
-# Used by both vacuum.py and sensor.py (defined here to avoid circular imports)
+# Fan speed mapping: API "fanLevel" value → fan speed option
 FAN_LEVEL_MAP: dict[str, str] = {"1": "quiet", "2": "normal", "3": "strong"}
 FAN_SPEEDS = ["quiet", "normal", "strong"]
+
+# Substrings of the cloud "state" value, grouped by meaning
+CLEANING_STATES = ("cleaning", "sweeping", "mopping", "spot", "wall_follow")
+PAUSED_STATES = ("pause",)
+DOCKED_STATES = ("charging", "docked")
+RETURNING_STATES = ("returning", "going_home")
+IDLE_STATES = ("idle", "standby")
+ERROR_STATES = ("error", "fault")
