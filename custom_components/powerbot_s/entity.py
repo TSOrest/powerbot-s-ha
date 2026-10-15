@@ -22,7 +22,8 @@ class PowerBotEntity(CoordinatorEntity[PowerBotDataUpdateCoordinator]):
             identifiers={(DOMAIN, device_id)},
             name=coordinator.config_entry.title,
             manufacturer=MANUFACTURER,
-            model=MODEL,
+            model=coordinator.model or MODEL,
+            model_id=coordinator.sn8,
             serial_number=device_id,
         )
 

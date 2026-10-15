@@ -22,7 +22,8 @@ async def async_setup_entry(
 ) -> None:
     """Set up the switches."""
     coordinator = entry.runtime_data
-    async_add_entities([PowerBotCarpetMode(coordinator), PowerBotDoNotDisturb(coordinator)])
+    if coordinator.supported:
+        async_add_entities([PowerBotCarpetMode(coordinator), PowerBotDoNotDisturb(coordinator)])
 
 
 class PowerBotCarpetMode(PowerBotEntity, SwitchEntity):

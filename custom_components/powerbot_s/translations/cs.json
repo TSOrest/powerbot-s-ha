@@ -135,5 +135,11 @@
         "name": "Konec Nerušit"
       }
     }
+  },
+  "issues": {
+    "unsupported_model": {
+      "title": "{name} je jen pro čtení",
+      "description": "{name} je {model} (kód modelu {sn8}, plugin aplikace {plugin}). Tato integrace zatím umí ovládat jen POWERbot-S VR7700, proto Home Assistant zobrazuje stav tohoto robota, ale nemůže mu posílat příkazy. Založte prosím issue na GitHubu s údaji o modelu výše, aby mohla být podpora doplněna."
+    }
   }
 }

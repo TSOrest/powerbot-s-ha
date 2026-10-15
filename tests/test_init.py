@@ -168,3 +168,57 @@ async def test_locate_volume_voice_and_do_not_disturb(hass: HomeAssistant, mock_
     )
     assert all(call.kwargs["wait_timeout"] != 15 for call in send.await_args_list)
     assert hass.states.get("time.kitchen_do_not_disturb_start").state == "23:30:00"
+
+
+async def test_device_shows_model(hass: HomeAssistant, mock_api) -> None:
+    from homeassistant.helpers import device_registry as dr
+
+    entry = _entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, "111")})
+    assert device.model == "VR7700"
+    assert device.model_id == "610VR510"
+
+
+async def test_other_model_is_read_only(hass: HomeAssistant, mock_api) -> None:
+    from homeassistant.helpers import issue_registry as ir
+
+    from .conftest import DEVICE
+
+    mock_api["devices"].return_value = [
+        {**DEVICE, "product": {"sn8": "610VR700", "productModel": "S9", "protoVersion": 1}}
+    ]
+    entry = _entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    vacuum = hass.states.get("vacuum.kitchen")
+    assert vacuum.state == "docked"
+    assert vacuum.attributes["supported_features"] == 4096  # state only
+    assert hass.states.get("sensor.kitchen_battery").state == "87"
+    for entity_id in ("number.kitchen_volume", "select.kitchen_water_level", "switch.kitchen_carpet_mode",
+                      "sensor.kitchen_filter"):
+        assert hass.states.get(entity_id) is None
+    # No query frames are sent to a robot whose command set is unknown
+    mock_api["send"].assert_not_awaited()
+    issue = ir.async_get(hass).async_get_issue(DOMAIN, "unsupported_model_111")
+    assert issue.translation_placeholders["sn8"] == "610VR700"
+
+
+async def test_no_water_level_without_mop(hass: HomeAssistant, mock_api) -> None:
+    from .conftest import REPLIES
+
+    reply = bytearray.fromhex(REPLIES[protocol.query_work_state()])
+    reply[27] &= 0xFE  # has_mop bit cleared
+    replies = {**REPLIES, protocol.query_work_state(): reply.hex()}
+
+    async def send(device_id, frame, wait_timeout=None):
+        return replies.get(frame)
+
+    mock_api["send"].side_effect = send
+    entry = _entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert hass.states.get("select.kitchen_water_level") is None
+    assert hass.states.get("select.kitchen_voice") is not None

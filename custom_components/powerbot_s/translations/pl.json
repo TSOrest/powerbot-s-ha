@@ -135,5 +135,11 @@
         "name": "Koniec Nie przeszkadzać"
       }
     }
+  },
+  "issues": {
+    "unsupported_model": {
+      "title": "{name} jest tylko do odczytu",
+      "description": "{name} to {model} (kod modelu {sn8}, wtyczka aplikacji {plugin}). Ta integracja potrafi na razie sterować tylko POWERbot-S VR7700, więc Home Assistant pokazuje stan tego robota, ale nie może wysyłać mu poleceń. Zgłoś issue na GitHubie z powyższymi danymi modelu, aby dodać jego obsługę."
+    }
   }
 }

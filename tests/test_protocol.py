@@ -40,7 +40,7 @@ def test_parse_replies() -> None:
     from .conftest import REPLIES
 
     work = protocol.parse_work_state(REPLIES[protocol.query_work_state()])
-    assert work == protocol.WorkState(fan=1, water=3, volume=99, carpet=True)
+    assert work == protocol.WorkState(fan=1, water=3, volume=99, carpet=True, has_mop=True)
     dnd = protocol.parse_dnd(REPLIES[protocol.query_dnd()])
     assert dnd == protocol.DoNotDisturb(enabled=True, start=time(22, 0), end=time(8, 0))
     assert protocol.parse_voice(REPLIES[protocol.query_voice()]) == 128

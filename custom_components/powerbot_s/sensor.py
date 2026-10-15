@@ -83,7 +83,11 @@ async def async_setup_entry(
 ) -> None:
     """Set up sensor entities."""
     coordinator = entry.runtime_data
-    async_add_entities(PowerBotSensor(coordinator, description) for description in SENSORS)
+    async_add_entities(
+        PowerBotSensor(coordinator, description)
+        for description in SENSORS
+        if coordinator.supported or not description.key.endswith("_life")
+    )
 
 
 class PowerBotSensor(PowerBotEntity, SensorEntity):

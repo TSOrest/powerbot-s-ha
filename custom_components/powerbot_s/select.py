@@ -21,7 +21,12 @@ async def async_setup_entry(
 ) -> None:
     """Set up the selects."""
     coordinator = entry.runtime_data
-    entities: list[SelectEntity] = [PowerBotWaterLevel(coordinator)]
+    if not coordinator.supported:
+        return
+    entities: list[SelectEntity] = []
+    # Skip the water level on a robot that reports no mop
+    if coordinator.has_mop is not False:
+        entities.append(PowerBotWaterLevel(coordinator))
     if coordinator.voices:
         entities.append(PowerBotVoice(coordinator))
     async_add_entities(entities)

@@ -115,6 +115,7 @@ class WorkState:
     water: int
     volume: int
     carpet: bool
+    has_mop: bool
 
 
 @dataclass(frozen=True)
@@ -145,7 +146,13 @@ def _reply(hex_frame: str | None, body: bytes, min_len: int) -> bytes | None:
 def parse_work_state(hex_frame: str | None) -> WorkState | None:
     if (frame := _reply(hex_frame, _QUERY_WORK_STATE, 29)) is None:
         return None
-    return WorkState(fan=frame[17], water=frame[19], volume=frame[20], carpet=bool(frame[28]))
+    return WorkState(
+        fan=frame[17],
+        water=frame[19],
+        volume=frame[20],
+        carpet=bool(frame[28]),
+        has_mop=bool(frame[27] & 1),
+    )
 
 
 def parse_dnd(hex_frame: str | None) -> DoNotDisturb | None:

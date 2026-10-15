@@ -19,6 +19,13 @@ VOICES = [
     {"id": 35, "voiceIndex": 35, "title": "English", "defaultVoice": 1},
     {"id": 128, "voiceIndex": 128, "title": "Українська", "defaultVoice": 0},
 ]
+DEVICE = {
+    "deviceId": "111",
+    "nickname": "Kitchen",
+    "ownerId": "u1",
+    "product": {"sn8": "610VR510", "productModel": "VR7700", "protoVersion": 0},
+    "panel": {"name": "T0xB8_610VR510", "versionName": "2.2.46"},
+}
 PARTS = {"filter_net_time": "4112", "side_brush_time": "4112", "roll_brush_time": "4112"}
 
 
@@ -39,7 +46,7 @@ def mock_api():
         patch("custom_components.powerbot_s.api.PowerBotApiClient.async_login", AsyncMock()) as login,
         patch(
             "custom_components.powerbot_s.api.PowerBotApiClient.async_get_devices",
-            AsyncMock(return_value=[{"deviceId": "111", "nickname": "Kitchen", "ownerId": "u1"}]),
+            AsyncMock(return_value=[dict(DEVICE)]),
         ) as devices,
         patch(
             "custom_components.powerbot_s.api.PowerBotApiClient.async_get_device_state",
