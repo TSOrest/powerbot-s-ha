@@ -1,46 +1,85 @@
 """Constants for the POWERbot-S integration."""
+from __future__ import annotations
+
+from datetime import timedelta
 
 DOMAIN = "powerbot_s"
 
-# Config entry keys
-CONF_EMAIL = "email"
-CONF_PASSWORD = "password"
+MANUFACTURER = "Samsung"
+MODEL = "POWERbot-S (VR7700)"
+
+# Config entry keys (email / password come from homeassistant.const)
 CONF_REGION = "region"
 CONF_DEVICE_ID = "device_id"
 CONF_ACCESS_TOKEN = "access_token"
 CONF_REFRESH_TOKEN = "refresh_token"
 
-# mzrobo.com / MzBots API credentials (from APK)
+SCAN_INTERVAL = timedelta(seconds=30)
+
+# mzrobo.com / MzBots API client id (from APK)
 CLIENT_ID = "ef3450cd49484b40a0a1438ef3a47cb9"
-APP_SECRET = "1537b2f65f1c69f528d0e973"
 
 # Regional API hosts
 REGION_HOSTS = {
-    "na":     "https://naprod.mzrobo.com",
     "eu":     "https://euprod.mzrobo.com",
-    "cn":     "https://api.mzbots.com",
+    "na":     "https://naprod.mzrobo.com",
     "global": "https://global.mzrobo.com",
+    "cn":     "https://api.mzbots.com",
 }
 DEFAULT_REGION = "eu"
 
-# App metadata (from APK manifest)
+# App metadata (from APK manifest). The cloud only lists devices for x-app-env "prod".
 APP_VERSION = "1.2.1.26101001"
-APP_ENV = "release"
+APP_ENV = "prod"
 
-# Robot state strings (from shadow API)
-ROBOT_STATE_CLEANING  = "cleaning"
-ROBOT_STATE_PAUSED    = "paused"
-ROBOT_STATE_DOCKED    = "charging"
-ROBOT_STATE_RETURNING = "returning"
-ROBOT_STATE_IDLE      = "idle"
-ROBOT_STATE_ERROR     = "error"
+# Suction levels as used by the robot (shadow "fanLevel" and command bytes)
+FAN_LEVELS: dict[str, int] = {
+    "off": 0,
+    "quiet": 1,
+    "low": 4,
+    "normal": 2,
+    "turbo": 3,
+    "max": 5,
+}
+FAN_SPEEDS = list(FAN_LEVELS)
+FAN_LEVEL_MAP: dict[str, str] = {str(v): k for k, v in FAN_LEVELS.items()}
+DEFAULT_FAN = "turbo"
 
-# Entity attribute names
-ATTR_BATTERY_LEVEL = "battery_level"
-ATTR_STATUS        = "status"
-ATTR_FAN_SPEED     = "fan_speed"
+# Mop water levels (shadow "waterLevel" and command bytes)
+WATER_LEVELS: dict[str, int] = {"off": 0, "low": 1, "normal": 2, "high": 3}
+WATER_LEVEL_MAP: dict[str, str] = {str(v): k for k, v in WATER_LEVELS.items()}
+DEFAULT_WATER = "normal"
 
-# Fan speed mapping: API "fanLevel" value → human-readable label
-# Used by both vacuum.py and sensor.py (defined here to avoid circular imports)
-FAN_LEVEL_MAP: dict[str, str] = {"1": "quiet", "2": "normal", "3": "strong"}
-FAN_SPEEDS = ["quiet", "normal", "strong"]
+# Cloud "state" values (names from the POWERbot-S app), grouped by meaning
+STATE_CLEANING = "cleaning"
+STATE_PAUSED = "paused"
+STATE_RETURNING = "returning"
+STATE_DOCKED = "docked"
+STATE_IDLE = "idle"
+STATE_ERROR = "error"
+
+ROBOT_STATES: dict[str, str] = {
+    "cleaning": STATE_CLEANING,
+    "positioning": STATE_CLEANING,
+    "discovering": STATE_CLEANING,
+    "manual_control": STATE_CLEANING,
+    "pause": STATE_PAUSED,
+    "charging_pause": STATE_PAUSED,
+    "wiping_pause": STATE_PAUSED,
+    "charging_back": STATE_RETURNING,
+    "wiping_back": STATE_RETURNING,
+    "charging": STATE_DOCKED,
+    "charging_finish": STATE_DOCKED,
+    "on_station": STATE_DOCKED,
+    "stop": STATE_IDLE,
+    "sleep": STATE_IDLE,
+    "upgrading": STATE_IDLE,
+    "error": STATE_ERROR,
+}
+
+
+def robot_state(raw: str | None) -> str | None:
+    """Group a raw cloud state string; unknown non-empty values count as idle."""
+    if not raw:
+        return None
+    return ROBOT_STATES.get(raw.lower(), STATE_IDLE)

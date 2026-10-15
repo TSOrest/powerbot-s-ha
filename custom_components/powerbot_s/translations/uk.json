@@ -2,29 +2,110 @@
   "config": {
     "step": {
       "user": {
-        "title": "POWERbot-S — Вхід",
-        "description": "Введіть дані від акаунту в додатку POWERbot-S.",
+        "title": "Вхід у POWERbot-S",
+        "description": "Використайте ті самі email і пароль, що й у мобільному додатку POWERbot-S.",
         "data": {
           "email": "Email",
           "password": "Пароль"
         }
       },
-      "device_id": {
-        "title": "Device ID пристрою",
-        "description": "Введіть Device ID вашого робота-пилососа. Знайдіть його в додатку POWERbot-S: Налаштування → Інформація про пристрій. Приклад: {hint}",
+      "select_device": {
+        "title": "Оберіть робота",
+        "description": "На цьому акаунті знайдено кілька роботів. Оберіть, якого додати.",
+        "data": {
+          "device_id": "Робот"
+        }
+      },
+      "manual": {
+        "title": "ID робота",
+        "description": "Сервер не повернув жодного робота для цього акаунта. Введіть Device ID з додатку POWERbot-S (Налаштування → Інформація про пристрій).",
         "data": {
           "device_id": "Device ID"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Повторний вхід",
+        "description": "Збережений вхід POWERbot-S більше не дійсний. Введіть пароль від акаунта ще раз.",
+        "data": {
+          "email": "Email",
+          "password": "Пароль"
         }
       }
     },
     "error": {
       "invalid_auth": "Невірний email або пароль.",
-      "cannot_connect": "Не вдалося підключитися до сервера або знайти пристрій. Перевірте Device ID та з’єднання з інтернетом.",
-      "no_devices": "Пристроїв на цьому акаунті не знайдено.",
-      "unknown": "Неочікувана помилка. Перевірте журнал подій."
+      "cannot_connect": "Не вдалося підключитися до хмари POWERbot-S.",
+      "device_not_found": "Цього робота не знайдено на акаунті.",
+      "unknown": "Неочікувана помилка. Перевірте журнал."
     },
     "abort": {
-      "already_configured": "Цей пристрій вже налаштований."
+      "already_configured": "Цей робот уже налаштований.",
+      "reauth_successful": "Повторний вхід успішний."
+    }
+  },
+  "entity": {
+    "vacuum": {
+      "powerbot": {
+        "state_attributes": {
+          "fan_speed": {
+            "state": {
+              "off": "Вимкнено",
+              "quiet": "Тихо",
+              "low": "Низька",
+              "normal": "Нормальна",
+              "turbo": "Турбо",
+              "max": "Максимум"
+            }
+          }
+        }
+      }
+    },
+    "sensor": {
+      "status": {
+        "name": "Стан"
+      },
+      "fan_speed": {
+        "name": "Швидкість вентилятора",
+        "state": {
+          "off": "Вимкнено",
+          "quiet": "Тихо",
+          "low": "Низька",
+          "normal": "Нормальна",
+          "turbo": "Турбо",
+          "max": "Максимум"
+        }
+      },
+      "connection": {
+        "name": "З'єднання",
+        "state": {
+          "online": "Онлайн",
+          "offline": "Офлайн"
+        }
+      }
+    },
+    "binary_sensor": {
+      "cleaning": {
+        "name": "Прибирання"
+      },
+      "docked": {
+        "name": "На базі"
+      }
+    },
+    "select": {
+      "water_level": {
+        "name": "Рівень води",
+        "state": {
+          "off": "Вимкнено",
+          "low": "Низький",
+          "normal": "Нормальний",
+          "high": "Високий"
+        }
+      }
+    },
+    "switch": {
+      "carpet_mode": {
+        "name": "Режим килима"
+      }
     }
   }
 }

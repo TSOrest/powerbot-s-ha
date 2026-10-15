@@ -1,1 +1,111 @@
-
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Bei POWERbot-S anmelden",
+        "description": "Verwende dieselbe E-Mail und dasselbe Passwort wie in der POWERbot-S-App.",
+        "data": {
+          "email": "E-Mail",
+          "password": "Passwort"
+        }
+      },
+      "select_device": {
+        "title": "Roboter auswählen",
+        "description": "In diesem Konto wurden mehrere Roboter gefunden. Wähle den hinzuzufügenden aus.",
+        "data": {
+          "device_id": "Roboter"
+        }
+      },
+      "manual": {
+        "title": "Roboter-ID",
+        "description": "Für dieses Konto wurden keine Roboter gemeldet. Gib die Device ID aus der POWERbot-S-App ein (Einstellungen → Geräteinfo).",
+        "data": {
+          "device_id": "Device ID"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Erneut anmelden",
+        "description": "Die gespeicherte POWERbot-S-Anmeldung funktioniert nicht mehr. Gib dein Passwort erneut ein.",
+        "data": {
+          "email": "E-Mail",
+          "password": "Passwort"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Ungültige E-Mail oder ungültiges Passwort.",
+      "cannot_connect": "Verbindung zur POWERbot-S-Cloud fehlgeschlagen.",
+      "device_not_found": "Dieser Roboter wurde im Konto nicht gefunden.",
+      "unknown": "Unerwarteter Fehler. Details im Protokoll."
+    },
+    "abort": {
+      "already_configured": "Dieser Roboter ist bereits eingerichtet.",
+      "reauth_successful": "Erneute Anmeldung erfolgreich."
+    }
+  },
+  "entity": {
+    "vacuum": {
+      "powerbot": {
+        "state_attributes": {
+          "fan_speed": {
+            "state": {
+              "off": "Aus",
+              "quiet": "Leise",
+              "low": "Niedrig",
+              "normal": "Normal",
+              "turbo": "Turbo",
+              "max": "Max"
+            }
+          }
+        }
+      }
+    },
+    "sensor": {
+      "status": {
+        "name": "Status"
+      },
+      "fan_speed": {
+        "name": "Saugstufe",
+        "state": {
+          "off": "Aus",
+          "quiet": "Leise",
+          "low": "Niedrig",
+          "normal": "Normal",
+          "turbo": "Turbo",
+          "max": "Max"
+        }
+      },
+      "connection": {
+        "name": "Verbindung",
+        "state": {
+          "online": "Online",
+          "offline": "Offline"
+        }
+      }
+    },
+    "binary_sensor": {
+      "cleaning": {
+        "name": "Reinigt"
+      },
+      "docked": {
+        "name": "Angedockt"
+      }
+    },
+    "select": {
+      "water_level": {
+        "name": "Wassermenge",
+        "state": {
+          "off": "Aus",
+          "low": "Niedrig",
+          "normal": "Normal",
+          "high": "Hoch"
+        }
+      }
+    },
+    "switch": {
+      "carpet_mode": {
+        "name": "Teppichmodus"
+      }
+    }
+  }
+}

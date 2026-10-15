@@ -1,1 +1,111 @@
-
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Logowanie do POWERbot-S",
+        "description": "Użyj tego samego e-maila i hasła co w aplikacji POWERbot-S.",
+        "data": {
+          "email": "E-mail",
+          "password": "Hasło"
+        }
+      },
+      "select_device": {
+        "title": "Wybierz robota",
+        "description": "Na tym koncie znaleziono kilka robotów. Wybierz, którego dodać.",
+        "data": {
+          "device_id": "Robot"
+        }
+      },
+      "manual": {
+        "title": "ID robota",
+        "description": "Dla tego konta nie zwrócono żadnych robotów. Wpisz Device ID z aplikacji POWERbot-S (Ustawienia → Informacje o urządzeniu).",
+        "data": {
+          "device_id": "Device ID"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Zaloguj ponownie",
+        "description": "Zapisane logowanie POWERbot-S przestało działać. Wpisz ponownie hasło.",
+        "data": {
+          "email": "E-mail",
+          "password": "Hasło"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Nieprawidłowy e-mail lub hasło.",
+      "cannot_connect": "Nie można połączyć się z chmurą POWERbot-S.",
+      "device_not_found": "Nie znaleziono tego robota na koncie.",
+      "unknown": "Nieoczekiwany błąd. Sprawdź logi."
+    },
+    "abort": {
+      "already_configured": "Ten robot jest już skonfigurowany.",
+      "reauth_successful": "Ponowne logowanie powiodło się."
+    }
+  },
+  "entity": {
+    "vacuum": {
+      "powerbot": {
+        "state_attributes": {
+          "fan_speed": {
+            "state": {
+              "off": "Wyłączone",
+              "quiet": "Cicho",
+              "low": "Niska",
+              "normal": "Normalna",
+              "turbo": "Turbo",
+              "max": "Maks"
+            }
+          }
+        }
+      }
+    },
+    "sensor": {
+      "status": {
+        "name": "Stan"
+      },
+      "fan_speed": {
+        "name": "Moc ssania",
+        "state": {
+          "off": "Wyłączone",
+          "quiet": "Cicho",
+          "low": "Niska",
+          "normal": "Normalna",
+          "turbo": "Turbo",
+          "max": "Maks"
+        }
+      },
+      "connection": {
+        "name": "Połączenie",
+        "state": {
+          "online": "Online",
+          "offline": "Offline"
+        }
+      }
+    },
+    "binary_sensor": {
+      "cleaning": {
+        "name": "Sprzątanie"
+      },
+      "docked": {
+        "name": "W stacji"
+      }
+    },
+    "select": {
+      "water_level": {
+        "name": "Poziom wody",
+        "state": {
+          "off": "Wyłączony",
+          "low": "Niski",
+          "normal": "Normalny",
+          "high": "Wysoki"
+        }
+      }
+    },
+    "switch": {
+      "carpet_mode": {
+        "name": "Tryb dywanu"
+      }
+    }
+  }
+}

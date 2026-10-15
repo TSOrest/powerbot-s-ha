@@ -1,8 +1,44 @@
 {
-  "entity_component": {
+  "entity": {
     "vacuum": {
-      "default": "mdi:robot-vacuum"
+      "powerbot": {
+        "default": "mdi:robot-vacuum"
+      }
+    },
+    "sensor": {
+      "status": {
+        "default": "mdi:robot-vacuum"
+      },
+      "fan_speed": {
+        "default": "mdi:fan"
+      },
+      "connection": {
+        "default": "mdi:wifi",
+        "state": {
+          "offline": "mdi:wifi-off"
+        }
+      }
+    },
+    "binary_sensor": {
+      "cleaning": {
+        "default": "mdi:robot-vacuum"
+      },
+      "docked": {
+        "default": "mdi:home-battery"
+      }
+    },
+    "select": {
+      "water_level": {
+        "default": "mdi:water",
+        "state": {
+          "off": "mdi:water-off"
+        }
+      }
+    },
+    "switch": {
+      "carpet_mode": {
+        "default": "mdi:rug"
+      }
     }
-  },
-  "services": {}
+  }
 }

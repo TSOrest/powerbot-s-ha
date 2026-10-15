@@ -1,1 +1,111 @@
-
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Prihlásenie do POWERbot-S",
+        "description": "Použite rovnaký e-mail a heslo ako v aplikácii POWERbot-S.",
+        "data": {
+          "email": "E-mail",
+          "password": "Heslo"
+        }
+      },
+      "select_device": {
+        "title": "Vyberte robota",
+        "description": "Na tomto účte sa našlo viac robotov. Vyberte, ktorého pridať.",
+        "data": {
+          "device_id": "Robot"
+        }
+      },
+      "manual": {
+        "title": "ID robota",
+        "description": "Pre tento účet neboli vrátené žiadne roboty. Zadajte Device ID z aplikácie POWERbot-S (Nastavenia → Informácie o zariadení).",
+        "data": {
+          "device_id": "Device ID"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Znova sa prihlásiť",
+        "description": "Uložené prihlásenie POWERbot-S už nefunguje. Zadajte znova heslo.",
+        "data": {
+          "email": "E-mail",
+          "password": "Heslo"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Neplatný e-mail alebo heslo.",
+      "cannot_connect": "Nedá sa pripojiť ku cloudu POWERbot-S.",
+      "device_not_found": "Tento robot sa na účte nenašiel.",
+      "unknown": "Neočakávaná chyba. Skontrolujte protokol."
+    },
+    "abort": {
+      "already_configured": "Tento robot je už nastavený.",
+      "reauth_successful": "Opätovné prihlásenie bolo úspešné."
+    }
+  },
+  "entity": {
+    "vacuum": {
+      "powerbot": {
+        "state_attributes": {
+          "fan_speed": {
+            "state": {
+              "off": "Vypnuté",
+              "quiet": "Tichý",
+              "low": "Nízky",
+              "normal": "Normálny",
+              "turbo": "Turbo",
+              "max": "Max"
+            }
+          }
+        }
+      }
+    },
+    "sensor": {
+      "status": {
+        "name": "Stav"
+      },
+      "fan_speed": {
+        "name": "Sací výkon",
+        "state": {
+          "off": "Vypnuté",
+          "quiet": "Tichý",
+          "low": "Nízky",
+          "normal": "Normálny",
+          "turbo": "Turbo",
+          "max": "Max"
+        }
+      },
+      "connection": {
+        "name": "Pripojenie",
+        "state": {
+          "online": "Online",
+          "offline": "Offline"
+        }
+      }
+    },
+    "binary_sensor": {
+      "cleaning": {
+        "name": "Upratovanie"
+      },
+      "docked": {
+        "name": "V základni"
+      }
+    },
+    "select": {
+      "water_level": {
+        "name": "Množstvo vody",
+        "state": {
+          "off": "Vypnuté",
+          "low": "Nízke",
+          "normal": "Normálne",
+          "high": "Vysoké"
+        }
+      }
+    },
+    "switch": {
+      "carpet_mode": {
+        "name": "Režim koberca"
+      }
+    }
+  }
+}

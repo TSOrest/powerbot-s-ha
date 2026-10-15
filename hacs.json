@@ -1,1 +1,5 @@
-{"name": "Samsung POWERbot-S", "render_readme": true, "homeassistant": "2024.1.0"}
+{
+  "name": "Samsung POWERbot-S",
+  "render_readme": true,
+  "homeassistant": "2025.2.0"
+}

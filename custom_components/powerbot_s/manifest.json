@@ -1,13 +1,12 @@
 {
-    "domain": "powerbot_s",
-    "name": "Samsung POWERbot-S (VR7700)",
-    "codeowners": ["@TSOrest"],
-    "config_flow": true,
-    "dependencies": [],
-    "documentation": "https://github.com/TSOrest/powerbot-s-ha",
-    "integration_type": "device",
-    "iot_class": "cloud_polling",
-    "issue_tracker": "https://github.com/TSOrest/powerbot-s-ha/issues",
-    "requirements": ["aiohttp>=3.9.0"],
-    "version": "1.1.0"
+  "domain": "powerbot_s",
+  "name": "Samsung POWERbot-S (VR7700)",
+  "codeowners": ["@TSOrest"],
+  "config_flow": true,
+  "documentation": "https://github.com/TSOrest/powerbot-s-ha",
+  "integration_type": "device",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/TSOrest/powerbot-s-ha/issues",
+  "requirements": [],
+  "version": "1.2.0"
 }
