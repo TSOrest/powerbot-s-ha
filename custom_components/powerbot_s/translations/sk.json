@@ -204,6 +204,11 @@
       "dnd_end": {
         "name": "Koniec Nerušiť"
       }
+    },
+    "image": {
+      "map": {
+        "name": "Mapa"
+      }
     }
   },
   "issues": {

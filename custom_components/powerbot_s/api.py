@@ -253,12 +253,15 @@ class PowerBotApiClient:
             return result["data"]
         return None
 
-    async def _midea_request(self, method: str, path: str, **kwargs: Any) -> Any:
+    async def _midea_request(
+        self, method: str, path: str, *, whole: bool = False, **kwargs: Any
+    ) -> Any:
         url = f"{PARTS_HOSTS.get(self._region, PARTS_HOSTS[DEFAULT_REGION])}{path}"
         headers = {
             "Content-Type": "application/json",
             "X-Timestamp": str(int(time.time() * 1000)),
             "x-obm": "true",
+            "x-mz-mfr": "meizhi",
         }
         if self._access_token:
             headers["X-Token"] = self._access_token
@@ -274,7 +277,7 @@ class PowerBotApiClient:
         code = data.get("errorCode", data.get("code"))
         if code not in (None, "0", 0):
             raise PowerBotApiError(f"API error {code}: {data.get('msg')}")
-        return data.get("data")
+        return data if whole else data.get("data")
 
     async def async_get_parts(self, device_id: str, user_id: str) -> dict[str, Any]:
         """Return consumable counters (minutes used, as strings)."""
@@ -282,6 +285,30 @@ class PowerBotApiClient:
             "POST", "/v2/app2pro/m7/parts/info", json={"deviceId": device_id, "userId": user_id}
         )
         return result if isinstance(result, dict) else {}
+
+    async def async_get_map(self, device_id: str, user_id: str) -> str | None:
+        """Return the robot's whole-map string (see robot_map)."""
+        result = await self._midea_request(
+            "POST",
+            "/v2/app2pro/m7/map/whole/get",
+            json={"deviceId": device_id, "userId": user_id, "index": 0},
+        )
+        return result if isinstance(result, str) else None
+
+    async def async_get_rooms(self, device_id: str, user_id: str) -> tuple[str | None, Any]:
+        """Return the room-map string and the room names (roomNameInfo)."""
+        reply = await self._midea_request(
+            "POST",
+            "/v2/app2pro/m7/partition/get",
+            whole=True,
+            json={"deviceId": device_id, "userId": user_id},
+        )
+        data = reply.get("data")
+        names = reply.get("roomNameInfo")
+        if isinstance(data, dict):  # names may sit next to the map inside data
+            names = data.get("roomNameInfo", names)
+            data = data.get("data", data.get("map"))
+        return (data if isinstance(data, str) else None), names
 
     async def async_get_voices(self, sn8: str) -> list[dict[str, Any]]:
         """Return the voice packs available for a model."""

@@ -113,14 +113,50 @@ class PowerBotVacuum(PowerBotEntity, StateVacuumEntity):
             protocol.set_suction(*self.coordinator.levels(fan=fan_speed))
         )
 
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Room ids and names, for vacuum.send_command clean_rooms."""
+        return {"rooms": self.coordinator.rooms} if self.coordinator.rooms else None
+
+    async def _async_clean_rooms(self, params: dict[str, Any]) -> None:
+        rooms = self.coordinator.rooms
+        wanted = params.get("rooms")
+        if isinstance(wanted, (str, int)):
+            wanted = [wanted]
+        if not wanted or not isinstance(wanted, list):
+            raise ServiceValidationError("Give the rooms to clean, e.g. rooms: [Kitchen, 2]")
+        by_name = {name.casefold(): room_id for room_id, name in rooms.items()}
+        ids: list[int] = []
+        for room in wanted:
+            room_id = by_name.get(str(room).casefold())
+            if room_id is None and str(room).isdigit() and int(room) in rooms:
+                room_id = int(room)
+            if room_id is None:
+                known = ", ".join(f"{i} {n}" for i, n in rooms.items()) or "none read yet"
+                raise ServiceValidationError(f"Unknown room: {room}. Rooms: {known}")
+            if room_id not in ids:
+                ids.append(room_id)
+        if len(ids) > protocol.MAX_ROOMS:
+            raise ServiceValidationError(f"At most {protocol.MAX_ROOMS} rooms at once")
+        try:
+            times = min(max(int(params.get("times", 1)), 1), 3)
+        except (TypeError, ValueError) as err:
+            raise ServiceValidationError("times must be 1, 2 or 3") from err
+        await self.coordinator.async_send(
+            protocol.clean_rooms(*self.coordinator.levels(), [(i, times) for i in ids])
+        )
+
     async def async_send_command(
         self,
         command: str,
         params: dict[str, Any] | list[Any] | None = None,
         **kwargs: Any,
     ) -> None:
-        """Extra commands: move (a short nudge by hand), clean_edge, clean_spot."""
+        """Extra commands: move (a short nudge by hand), clean_edge, clean_spot, clean_rooms."""
         params = params if isinstance(params, dict) else {}
+        if command == "clean_rooms":
+            await self._async_clean_rooms(params)
+            return
         if command in _CLEAN_MODES:
             await self.coordinator.async_send(
                 protocol.start(*self.coordinator.levels(), mode=_CLEAN_MODES[command])
@@ -128,7 +164,7 @@ class PowerBotVacuum(PowerBotEntity, StateVacuumEntity):
             return
         if command != "move":
             raise ServiceValidationError(
-                f"Unknown command: {command}. Use move, clean_edge or clean_spot."
+                f"Unknown command: {command}. Use move, clean_edge, clean_spot or clean_rooms."
             )
         direction = params.get("direction", "forward")
         if direction not in _DIRECTIONS:

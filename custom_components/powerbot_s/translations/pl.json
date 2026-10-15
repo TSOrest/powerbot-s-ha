@@ -204,6 +204,11 @@
       "dnd_end": {
         "name": "Koniec Nie przeszkadzać"
       }
+    },
+    "image": {
+      "map": {
+        "name": "Mapa"
+      }
     }
   },
   "issues": {

@@ -54,6 +54,18 @@ def start(fan: int, water: int, mode: int = _WORK_MODE_AUTO) -> str:
     return build_frame(bytes([_CONTROL, _START, 0, 2, 0, mode, fan, 0, water, 0, 0]))
 
 
+_WORK_MODE_ROOMS = 0x0A
+MAX_ROOMS = 10
+
+
+def clean_rooms(fan: int, water: int, rooms: list[tuple[int, int]]) -> str:
+    """Clean the given rooms, as (room id, times) pairs; up to 10 rooms."""
+    slots = bytearray(2 * MAX_ROOMS)
+    for i, (room_id, times) in enumerate(rooms[:MAX_ROOMS]):
+        slots[2 * i : 2 * i + 2] = bytes([room_id, times])
+    return build_frame(bytes([_CONTROL, _START, 0, 2, 0, _WORK_MODE_ROOMS, fan, 0, water, 0]) + slots)
+
+
 def manual(direction: int) -> str:
     """Drive by hand: 0 stop, 1 forward, 2 back, 3 left, 4 right."""
     return build_frame(bytes([_CONTROL, _START, 0, 1, direction, 0, 0, 0, 0, 0, 0]))

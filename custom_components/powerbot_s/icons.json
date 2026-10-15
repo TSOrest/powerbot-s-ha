@@ -100,6 +100,11 @@
       "dnd_end": {
         "default": "mdi:clock-end"
       }
+    },
+    "image": {
+      "map": {
+        "default": "mdi:floor-plan"
+      }
     }
   }
 }

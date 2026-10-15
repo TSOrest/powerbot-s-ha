@@ -204,6 +204,11 @@
       "dnd_end": {
         "name": "Do not disturb end"
       }
+    },
+    "image": {
+      "map": {
+        "name": "Map"
+      }
     }
   },
   "issues": {

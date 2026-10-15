@@ -111,3 +111,18 @@ async def test_parts_and_voices_from_midea(hass: HomeAssistant, aioclient_mock) 
     )
     with pytest.raises(PowerBotApiError, match="3102"):
         await client.async_get_parts("111", "")
+
+
+async def test_map_and_rooms_from_midea(hass: HomeAssistant, aioclient_mock) -> None:
+    from custom_components.powerbot_s.const import PARTS_HOSTS
+
+    host = PARTS_HOSTS["eu"]
+    aioclient_mock.post(f"{host}/v2/app2pro/m7/map/whole/get", json={"code": "0", "data": "map 0 1 2 3 4 x"})
+    aioclient_mock.post(
+        f"{host}/v2/app2pro/m7/partition/get",
+        json={"code": "0", "data": "map_zone 0 0 1 2 3 4 0 x", "roomNameInfo": '{"1": "Kitchen"}'},
+    )
+    client = PowerBotApiClient(async_get_clientsession(hass), "a@b.c", "pw", access_token="t")
+    assert await client.async_get_map("111", "u1") == "map 0 1 2 3 4 x"
+    assert aioclient_mock.mock_calls[-1][2] == {"deviceId": "111", "userId": "u1", "index": 0}
+    assert await client.async_get_rooms("111", "u1") == ("map_zone 0 0 1 2 3 4 0 x", '{"1": "Kitchen"}')
