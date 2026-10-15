@@ -19,15 +19,17 @@ Custom Home Assistant integration for the **Samsung VR7700 (POWERbot-S)** robot 
 
 | Entity | Type | Description |
 |--------|------|-------------|
-| Vacuum | `vacuum` | Start, stop, pause, return to dock, spot clean, fan speed |
+| Vacuum | `vacuum` | Start, stop, pause/resume, return to dock, suction (off / quiet / low / normal / turbo / max) |
 | Status | `sensor` | Raw state string from the cloud (`cleaning`, `charging_finish`, …) |
 | Battery | `sensor` | Battery level (%) |
-| Fan speed | `sensor` | Current suction level (quiet / normal / strong) |
+| Fan speed | `sensor` | Current suction level |
 | Connection | `sensor` | online / offline (diagnostic) |
 | Problem | `binary_sensor` | `on` when the robot reports an error |
 | Cleaning | `binary_sensor` | `on` while cleaning |
 | Docked | `binary_sensor` | `on` while in the charging dock |
 | Connectivity | `binary_sensor` | `on` when the cloud is reachable (diagnostic) |
+| Water level | `select` | Mop water level (off / low / normal / high) |
+| Carpet mode | `switch` | Raise suction on carpets (shows the last value set from HA) |
 
 ### Requirements
 
@@ -73,15 +75,17 @@ logger:
 
 | Сутність | Тип | Опис |
 |----------|-----|------|
-| Пилосос | `vacuum` | Старт, стоп, пауза, на базу, точкове прибирання, швидкість вентилятора |
+| Пилосос | `vacuum` | Старт, стоп, пауза/продовження, на базу, потужність всмоктування (вимк. / тихо / низька / нормальна / турбо / максимум) |
 | Стан | `sensor` | Рядок стану з хмари (`cleaning`, `charging_finish`, …) |
 | Батарея | `sensor` | Рівень заряду (%) |
-| Швидкість вентилятора | `sensor` | Поточний рівень всмоктування (тихо / нормально / сильно) |
+| Швидкість вентилятора | `sensor` | Поточний рівень всмоктування |
 | З'єднання | `sensor` | онлайн / офлайн (діагностика) |
 | Проблема | `binary_sensor` | `on`, коли робот повідомляє про помилку |
 | Прибирання | `binary_sensor` | `on` під час прибирання |
 | На базі | `binary_sensor` | `on`, коли робот на зарядній станції |
 | Підключення | `binary_sensor` | `on`, коли хмара доступна (діагностика) |
+| Рівень води | `select` | Подача води для вологого прибирання (вимк. / низький / нормальний / високий) |
+| Режим килима | `switch` | Підвищує всмоктування на килимах (показує останнє значення, задане з HA) |
 
 ### Вимоги
 

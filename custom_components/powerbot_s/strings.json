@@ -49,9 +49,12 @@
         "state_attributes": {
           "fan_speed": {
             "state": {
+              "off": "Off",
               "quiet": "Quiet",
+              "low": "Low",
               "normal": "Normal",
-              "strong": "Strong"
+              "turbo": "Turbo",
+              "max": "Max"
             }
           }
         }
@@ -64,9 +67,12 @@
       "fan_speed": {
         "name": "Fan speed",
         "state": {
+          "off": "Off",
           "quiet": "Quiet",
+          "low": "Low",
           "normal": "Normal",
-          "strong": "Strong"
+          "turbo": "Turbo",
+          "max": "Max"
         }
       },
       "connection": {
@@ -83,6 +89,22 @@
       },
       "docked": {
         "name": "Docked"
+      }
+    },
+    "select": {
+      "water_level": {
+        "name": "Water level",
+        "state": {
+          "off": "Off",
+          "low": "Low",
+          "normal": "Normal",
+          "high": "High"
+        }
+      }
+    },
+    "switch": {
+      "carpet_mode": {
+        "name": "Carpet mode"
       }
     }
   }

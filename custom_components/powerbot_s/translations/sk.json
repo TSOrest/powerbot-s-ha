@@ -49,9 +49,12 @@
         "state_attributes": {
           "fan_speed": {
             "state": {
+              "off": "Vypnuté",
               "quiet": "Tichý",
+              "low": "Nízky",
               "normal": "Normálny",
-              "strong": "Silný"
+              "turbo": "Turbo",
+              "max": "Max"
             }
           }
         }
@@ -64,9 +67,12 @@
       "fan_speed": {
         "name": "Sací výkon",
         "state": {
+          "off": "Vypnuté",
           "quiet": "Tichý",
+          "low": "Nízky",
           "normal": "Normálny",
-          "strong": "Silný"
+          "turbo": "Turbo",
+          "max": "Max"
         }
       },
       "connection": {
@@ -83,6 +89,22 @@
       },
       "docked": {
         "name": "V základni"
+      }
+    },
+    "select": {
+      "water_level": {
+        "name": "Množstvo vody",
+        "state": {
+          "off": "Vypnuté",
+          "low": "Nízke",
+          "normal": "Normálne",
+          "high": "Vysoké"
+        }
+      }
+    },
+    "switch": {
+      "carpet_mode": {
+        "name": "Režim koberca"
       }
     }
   }

@@ -49,9 +49,12 @@
         "state_attributes": {
           "fan_speed": {
             "state": {
+              "off": "Aus",
               "quiet": "Leise",
+              "low": "Niedrig",
               "normal": "Normal",
-              "strong": "Stark"
+              "turbo": "Turbo",
+              "max": "Max"
             }
           }
         }
@@ -64,9 +67,12 @@
       "fan_speed": {
         "name": "Saugstufe",
         "state": {
+          "off": "Aus",
           "quiet": "Leise",
+          "low": "Niedrig",
           "normal": "Normal",
-          "strong": "Stark"
+          "turbo": "Turbo",
+          "max": "Max"
         }
       },
       "connection": {
@@ -83,6 +89,22 @@
       },
       "docked": {
         "name": "Angedockt"
+      }
+    },
+    "select": {
+      "water_level": {
+        "name": "Wassermenge",
+        "state": {
+          "off": "Aus",
+          "low": "Niedrig",
+          "normal": "Normal",
+          "high": "Hoch"
+        }
+      }
+    },
+    "switch": {
+      "carpet_mode": {
+        "name": "Teppichmodus"
       }
     }
   }

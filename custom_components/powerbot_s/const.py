@@ -28,18 +28,58 @@ REGION_HOSTS = {
 }
 DEFAULT_REGION = "eu"
 
-# App metadata (from APK manifest)
+# App metadata (from APK manifest). The cloud only lists devices for x-app-env "prod".
 APP_VERSION = "1.2.1.26101001"
-APP_ENV = "release"
+APP_ENV = "prod"
 
-# Fan speed mapping: API "fanLevel" value → fan speed option
-FAN_LEVEL_MAP: dict[str, str] = {"1": "quiet", "2": "normal", "3": "strong"}
-FAN_SPEEDS = ["quiet", "normal", "strong"]
+# Suction levels as used by the robot (shadow "fanLevel" and command bytes)
+FAN_LEVELS: dict[str, int] = {
+    "off": 0,
+    "quiet": 1,
+    "low": 4,
+    "normal": 2,
+    "turbo": 3,
+    "max": 5,
+}
+FAN_SPEEDS = list(FAN_LEVELS)
+FAN_LEVEL_MAP: dict[str, str] = {str(v): k for k, v in FAN_LEVELS.items()}
+DEFAULT_FAN = "turbo"
 
-# Substrings of the cloud "state" value, grouped by meaning
-CLEANING_STATES = ("cleaning", "sweeping", "mopping", "spot", "wall_follow")
-PAUSED_STATES = ("pause",)
-DOCKED_STATES = ("charging", "docked")
-RETURNING_STATES = ("returning", "going_home")
-IDLE_STATES = ("idle", "standby")
-ERROR_STATES = ("error", "fault")
+# Mop water levels (shadow "waterLevel" and command bytes)
+WATER_LEVELS: dict[str, int] = {"off": 0, "low": 1, "normal": 2, "high": 3}
+WATER_LEVEL_MAP: dict[str, str] = {str(v): k for k, v in WATER_LEVELS.items()}
+DEFAULT_WATER = "normal"
+
+# Cloud "state" values (names from the POWERbot-S app), grouped by meaning
+STATE_CLEANING = "cleaning"
+STATE_PAUSED = "paused"
+STATE_RETURNING = "returning"
+STATE_DOCKED = "docked"
+STATE_IDLE = "idle"
+STATE_ERROR = "error"
+
+ROBOT_STATES: dict[str, str] = {
+    "cleaning": STATE_CLEANING,
+    "positioning": STATE_CLEANING,
+    "discovering": STATE_CLEANING,
+    "manual_control": STATE_CLEANING,
+    "pause": STATE_PAUSED,
+    "charging_pause": STATE_PAUSED,
+    "wiping_pause": STATE_PAUSED,
+    "charging_back": STATE_RETURNING,
+    "wiping_back": STATE_RETURNING,
+    "charging": STATE_DOCKED,
+    "charging_finish": STATE_DOCKED,
+    "on_station": STATE_DOCKED,
+    "stop": STATE_IDLE,
+    "sleep": STATE_IDLE,
+    "upgrading": STATE_IDLE,
+    "error": STATE_ERROR,
+}
+
+
+def robot_state(raw: str | None) -> str | None:
+    """Group a raw cloud state string; unknown non-empty values count as idle."""
+    if not raw:
+        return None
+    return ROBOT_STATES.get(raw.lower(), STATE_IDLE)

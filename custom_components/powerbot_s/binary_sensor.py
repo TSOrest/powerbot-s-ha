@@ -13,7 +13,7 @@ from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .const import CLEANING_STATES, DOCKED_STATES, ERROR_STATES
+from .const import STATE_CLEANING, STATE_DOCKED, STATE_ERROR, robot_state
 from .coordinator import PowerBotConfigEntry, PowerBotDataUpdateCoordinator
 from .entity import PowerBotEntity
 
@@ -28,27 +28,27 @@ class PowerBotBinarySensorDescription(BinarySensorEntityDescription):
     always_available: bool = False
 
 
-def _matches(keys: tuple[str, ...]) -> Callable[[str, PowerBotDataUpdateCoordinator], bool]:
-    return lambda state, _: any(key in state for key in keys)
+def _is(group: str) -> Callable[[str, PowerBotDataUpdateCoordinator], bool]:
+    return lambda state, _: robot_state(state) == group
 
 
 BINARY_SENSORS: tuple[PowerBotBinarySensorDescription, ...] = (
     PowerBotBinarySensorDescription(
         key="error",
         device_class=BinarySensorDeviceClass.PROBLEM,
-        is_on_fn=_matches(ERROR_STATES),
+        is_on_fn=_is(STATE_ERROR),
     ),
     PowerBotBinarySensorDescription(
         key="cleaning",
         translation_key="cleaning",
         device_class=BinarySensorDeviceClass.RUNNING,
-        is_on_fn=_matches(CLEANING_STATES),
+        is_on_fn=_is(STATE_CLEANING),
     ),
     PowerBotBinarySensorDescription(
         key="docked",
         translation_key="docked",
         device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
-        is_on_fn=_matches(DOCKED_STATES),
+        is_on_fn=_is(STATE_DOCKED),
     ),
     PowerBotBinarySensorDescription(
         key="online",

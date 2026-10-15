@@ -15,7 +15,7 @@ from homeassistant.const import PERCENTAGE, EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .const import FAN_LEVEL_MAP, FAN_SPEEDS
+from .const import FAN_SPEEDS
 from .coordinator import PowerBotConfigEntry, PowerBotDataUpdateCoordinator
 from .entity import PowerBotEntity
 
@@ -27,11 +27,6 @@ class PowerBotSensorDescription(SensorEntityDescription):
     """Describes a POWERbot-S sensor."""
 
     value_fn: Callable[[PowerBotDataUpdateCoordinator], Any]
-
-
-def _fan_speed(coordinator: PowerBotDataUpdateCoordinator) -> str | None:
-    level = coordinator.data.get("fanLevel")
-    return FAN_LEVEL_MAP.get(str(level)) if level is not None else None
 
 
 def _connection(coordinator: PowerBotDataUpdateCoordinator) -> str:
@@ -58,7 +53,7 @@ SENSORS: tuple[PowerBotSensorDescription, ...] = (
         translation_key="fan_speed",
         device_class=SensorDeviceClass.ENUM,
         options=FAN_SPEEDS,
-        value_fn=_fan_speed,
+        value_fn=lambda c: c.fan_speed,
     ),
     PowerBotSensorDescription(
         key="connection",

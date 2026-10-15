@@ -49,9 +49,12 @@
         "state_attributes": {
           "fan_speed": {
             "state": {
+              "off": "Wyłączone",
               "quiet": "Cicho",
-              "normal": "Normalnie",
-              "strong": "Mocno"
+              "low": "Niska",
+              "normal": "Normalna",
+              "turbo": "Turbo",
+              "max": "Maks"
             }
           }
         }
@@ -64,9 +67,12 @@
       "fan_speed": {
         "name": "Moc ssania",
         "state": {
+          "off": "Wyłączone",
           "quiet": "Cicho",
-          "normal": "Normalnie",
-          "strong": "Mocno"
+          "low": "Niska",
+          "normal": "Normalna",
+          "turbo": "Turbo",
+          "max": "Maks"
         }
       },
       "connection": {
@@ -83,6 +89,22 @@
       },
       "docked": {
         "name": "W stacji"
+      }
+    },
+    "select": {
+      "water_level": {
+        "name": "Poziom wody",
+        "state": {
+          "off": "Wyłączony",
+          "low": "Niski",
+          "normal": "Normalny",
+          "high": "Wysoki"
+        }
+      }
+    },
+    "switch": {
+      "carpet_mode": {
+        "name": "Tryb dywanu"
       }
     }
   }

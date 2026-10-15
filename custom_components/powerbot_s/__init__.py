@@ -12,7 +12,13 @@ from .api import PowerBotApiClient
 from .const import CONF_ACCESS_TOKEN, CONF_REFRESH_TOKEN, CONF_REGION, DEFAULT_REGION
 from .coordinator import PowerBotConfigEntry, PowerBotDataUpdateCoordinator
 
-PLATFORMS: list[Platform] = [Platform.VACUUM, Platform.SENSOR, Platform.BINARY_SENSOR]
+PLATFORMS: list[Platform] = [
+    Platform.BINARY_SENSOR,
+    Platform.SELECT,
+    Platform.SENSOR,
+    Platform.SWITCH,
+    Platform.VACUUM,
+]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: PowerBotConfigEntry) -> bool:

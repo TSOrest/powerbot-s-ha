@@ -49,9 +49,12 @@
         "state_attributes": {
           "fan_speed": {
             "state": {
+              "off": "Arrêt",
               "quiet": "Silencieux",
+              "low": "Faible",
               "normal": "Normal",
-              "strong": "Fort"
+              "turbo": "Turbo",
+              "max": "Max"
             }
           }
         }
@@ -64,9 +67,12 @@
       "fan_speed": {
         "name": "Puissance d'aspiration",
         "state": {
+          "off": "Arrêt",
           "quiet": "Silencieux",
+          "low": "Faible",
           "normal": "Normal",
-          "strong": "Fort"
+          "turbo": "Turbo",
+          "max": "Max"
         }
       },
       "connection": {
@@ -83,6 +89,22 @@
       },
       "docked": {
         "name": "Sur la base"
+      }
+    },
+    "select": {
+      "water_level": {
+        "name": "Niveau d'eau",
+        "state": {
+          "off": "Arrêt",
+          "low": "Faible",
+          "normal": "Normal",
+          "high": "Élevé"
+        }
+      }
+    },
+    "switch": {
+      "carpet_mode": {
+        "name": "Mode tapis"
       }
     }
   }

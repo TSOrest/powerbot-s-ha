@@ -26,6 +26,19 @@
       "docked": {
         "default": "mdi:home-battery"
       }
+    },
+    "select": {
+      "water_level": {
+        "default": "mdi:water",
+        "state": {
+          "off": "mdi:water-off"
+        }
+      }
+    },
+    "switch": {
+      "carpet_mode": {
+        "default": "mdi:rug"
+      }
     }
   }
 }
