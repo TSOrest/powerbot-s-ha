@@ -35,6 +35,29 @@ Custom Home Assistant integration for the **Samsung VR7700 (POWERbot-S)** robot 
 | Volume | `number` | Voice volume, 0–100 % |
 | Voice | `select` | Voice pack (the robot downloads a new one itself) |
 | Filter / Side brush / Main brush | `sensor` | Remaining life, % (filter 150 h, side brush 100 h, main brush 200 h) |
+| Cleaning mode | `sensor` | Mode of the current or last clean (auto, edge, spot, rooms, zones, …) |
+| Cleaned area / Cleaning time | `sensor` | Area (m²) and time (min) of the current or last clean |
+| Error | `sensor` | What the robot reports is wrong (dustbin missing, brush tangled, …); `Error code` is a disabled diagnostic sensor with the raw code |
+| Schedule N | `switch` | Turns a schedule made in the app on or off; attributes show days, start, duration, mode, suction and water |
+
+#### Extra commands (`vacuum.send_command`)
+
+| Command | Params | What it does |
+|---------|--------|--------------|
+| `move` | `direction`: forward / back / left / right, `duration`: seconds (default 1, max 5) | Drives the robot by hand for a moment, then stops it |
+| `clean_edge` | — | Cleans along the walls (experimental) |
+| `clean_spot` | — | Cleans the spot around the robot (experimental) |
+
+```yaml
+action: vacuum.send_command
+target:
+  entity_id: vacuum.powerbot
+data:
+  command: move
+  params:
+    direction: forward
+    duration: 1
+```
 
 ### Supported models
 
@@ -106,6 +129,18 @@ logger:
 | Гучність | `number` | Гучність голосу, 0–100 % |
 | Голос | `select` | Голосовий пакет (робот сам завантажує новий) |
 | Фільтр / Бічна щітка / Основна щітка | `sensor` | Залишок ресурсу, % (фільтр 150 год, бічна щітка 100 год, основна 200 год) |
+| Режим прибирання | `sensor` | Режим поточного або останнього прибирання (авто, вздовж стін, точкове, кімнати, зони, …) |
+| Прибрана площа / Час прибирання | `sensor` | Площа (м²) і час (хв) поточного або останнього прибирання |
+| Помилка | `sensor` | Що робот повідомляє як проблему (немає контейнера, заплутана щітка, …); «Код помилки» — вимкнений діагностичний сенсор із сирим кодом |
+| Розклад N | `switch` | Вмикає або вимикає розклад, створений у застосунку; атрибути показують дні, початок, тривалість, режим, всмоктування і воду |
+
+#### Додаткові команди (`vacuum.send_command`)
+
+| Команда | Параметри | Що робить |
+|---------|-----------|-----------|
+| `move` | `direction`: forward / back / left / right, `duration`: секунди (типово 1, максимум 5) | Ненадовго рушає робота вручну, потім зупиняє |
+| `clean_edge` | — | Прибирання вздовж стін (експериментально) |
+| `clean_spot` | — | Прибирання навколо робота (експериментально) |
 
 ### Підтримувані моделі
 

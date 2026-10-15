@@ -26,6 +26,24 @@
       },
       "main_brush_life": {
         "default": "mdi:broom"
+      },
+      "cleaning_mode": {
+        "default": "mdi:map-marker-path"
+      },
+      "cleaned_area": {
+        "default": "mdi:texture-box"
+      },
+      "cleaning_time": {
+        "default": "mdi:timer-outline"
+      },
+      "error_code": {
+        "default": "mdi:alert-circle-outline"
+      },
+      "robot_error": {
+        "default": "mdi:alert-circle-outline",
+        "state": {
+          "none": "mdi:check-circle-outline"
+        }
       }
     },
     "binary_sensor": {
@@ -55,6 +73,12 @@
         "default": "mdi:bell-sleep",
         "state": {
           "off": "mdi:bell"
+        }
+      },
+      "schedule": {
+        "default": "mdi:calendar-clock",
+        "state": {
+          "off": "mdi:calendar-remove"
         }
       }
     },

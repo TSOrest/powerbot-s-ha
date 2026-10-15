@@ -90,6 +90,73 @@
       },
       "main_brush_life": {
         "name": "Основна щітка"
+      },
+      "cleaning_mode": {
+        "name": "Режим прибирання",
+        "state": {
+          "random": "Довільний",
+          "arc": "Дугою",
+          "edge": "По краях",
+          "spot": "Точкове",
+          "spiral": "Спіраль",
+          "bed": "Ліжко",
+          "wide_spiral": "Широка спіраль",
+          "auto": "Авто",
+          "area": "Ділянка",
+          "room": "Кімната",
+          "zone": "Зона",
+          "path": "Маршрут"
+        }
+      },
+      "cleaned_area": {
+        "name": "Прибрана площа"
+      },
+      "cleaning_time": {
+        "name": "Час прибирання"
+      },
+      "error_code": {
+        "name": "Код помилки"
+      },
+      "robot_error": {
+        "name": "Помилка",
+        "state": {
+          "none": "Немає помилки",
+          "dustbin_missing": "Контейнер для пилу встановлено неправильно",
+          "wheels_stuck": "Колеса застрягли",
+          "wheels_overload": "Колеса перевантажені",
+          "side_brush_tangled": "Бічна щітка заплуталась",
+          "main_brush_tangled": "Основна щітка заплуталась",
+          "vacuum_motor_overload": "Перевантаження двигуна всмоктування",
+          "bumper_failure": "Несправність бампера",
+          "lidar_failure": "Несправність лідара",
+          "cliff_sensor_failure": "Несправність датчика перепаду висоти",
+          "robot_tilted": "Робот нахилений",
+          "lidar_blocked": "Лідар заблоковано",
+          "edge_sensor_failure": "Несправність бічного датчика",
+          "no_go_zone": "На шляху заборонена зона або віртуальна стіна",
+          "magnetic_interference": "Сильні магнітні перешкоди",
+          "mop_missing": "Мопу встановлено неправильно",
+          "wheels_slipping": "Колеса прослизають",
+          "recharge_failed": "Не вдалося повернутися на базу",
+          "mop_module_stuck": "Модуль миття, можливо, застряг",
+          "dust_collection_failed": "Не вдалося зібрати пил",
+          "dust_bag_full": "Мішок для пилу заповнений",
+          "air_duct_blocked": "Повітропровід заблоковано",
+          "bluetooth_error": "Помилка Bluetooth",
+          "lidar_communication": "Помилка зв'язку з лідаром, перезапустіть робота",
+          "host_communication": "Внутрішня помилка зв'язку, перезапустіть робота",
+          "internal_error": "Внутрішня помилка, перезапустіть робота",
+          "relocation_failed": "Не вдалося визначити місце на карті",
+          "battery_low": "Низький заряд батареї",
+          "cliff_sensor_blocked": "Датчики перепаду висоти заблоковано",
+          "battery_abnormal": "Проблема з батареєю",
+          "mop_lift_failure": "Несправність підйому мопи",
+          "dust_collection_interrupted": "Збір пилу перервано",
+          "canister_lid_open": "Кришка контейнера відкрита",
+          "dust_bag_missing": "Мішок для пилу не встановлено",
+          "child_lock": "Увімкнено блокування від дітей",
+          "unknown_error": "Невідома помилка, перезапустіть робота"
+        }
       }
     },
     "binary_sensor": {
@@ -120,6 +187,9 @@
       },
       "do_not_disturb": {
         "name": "Не турбувати"
+      },
+      "schedule": {
+        "name": "Розклад {task}"
       }
     },
     "number": {

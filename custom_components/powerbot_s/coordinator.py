@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import replace
 from datetime import time
 from typing import Any
 
@@ -88,6 +89,10 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.plugin: str | None = None
         # Read from the robot: False when it reports no mop attached
         self.has_mop: bool | None = None
+        # Last work-state reply from the robot
+        self.work: protocol.WorkState | None = None
+        # Cleaning schedules stored on the robot: task id -> schedule
+        self.schedules: dict[int, protocol.Schedule] = {}
 
     @property
     def supported(self) -> bool:
@@ -171,12 +176,16 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             self.volume = work.volume
             self.carpet_mode = work.carpet
             self.has_mop = work.has_mop
+            self.work = work
         if not slow:
             return
         if dnd := protocol.parse_dnd(await self._async_query(protocol.query_dnd())):
             self.dnd_enabled, self.dnd_start, self.dnd_end = dnd.enabled, dnd.start, dnd.end
         if (voice := protocol.parse_voice(await self._async_query(protocol.query_voice()))) is not None:
             self.voice = voice
+        schedules = protocol.parse_schedules(await self._async_query(protocol.query_schedules()))
+        if schedules is not None:
+            self.schedules = {schedule.task_id: schedule for schedule in schedules}
         if self._owner_id:
             try:
                 parts = await self.client.async_get_parts(self.device_id, self._owner_id)
@@ -219,6 +228,12 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             )
         )
         self.dnd_enabled, self.dnd_start, self.dnd_end = bool(enabled), start, end
+
+    async def async_set_schedule(self, task_id: int, enabled: bool) -> None:
+        """Turn a schedule stored on the robot on or off."""
+        await self.async_send(protocol.schedule_enabled(task_id, enabled))
+        if schedule := self.schedules.get(task_id):
+            self.schedules[task_id] = replace(schedule, enabled=enabled)
 
     async def async_send(self, frame: str) -> None:
         """Send a command frame and refresh the state."""

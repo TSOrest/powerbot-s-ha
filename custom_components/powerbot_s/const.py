@@ -42,6 +42,80 @@ DEFAULT_SN8 = "610VR510"
 SUPPORTED_SN8 = ("610VR510", "620VR520")
 SUPPORTED_PROTO_VERSIONS = (0,)
 
+# Work modes reported in the work-state reply (byte 16)
+WORK_MODES = {
+    1: "random",
+    2: "arc",
+    3: "edge",
+    4: "spot",
+    5: "spiral",
+    6: "bed",
+    7: "wide_spiral",
+    8: "auto",
+    9: "area",
+    10: "room",
+    11: "zone",
+    12: "path",
+}
+
+# Faults from the work-state reply: (class, code) -> key. Class 1 needs the
+# user to fix something, class 2 needs a restart, class 3 is a warning.
+FAULTS = {
+    (1, 1): "dustbin_missing",
+    (1, 2): "wheels_stuck",
+    (1, 3): "wheels_overload",
+    (1, 4): "side_brush_tangled",
+    (1, 5): "main_brush_tangled",
+    (1, 6): "vacuum_motor_overload",
+    (1, 7): "bumper_failure",
+    (1, 8): "lidar_failure",
+    (1, 9): "cliff_sensor_failure",
+    (1, 11): "robot_tilted",
+    (1, 12): "lidar_blocked",
+    (1, 13): "edge_sensor_failure",
+    (1, 14): "no_go_zone",
+    (1, 15): "magnetic_interference",
+    (1, 16): "lidar_blocked",
+    (1, 17): "mop_missing",
+    (1, 18): "wheels_slipping",
+    (1, 19): "recharge_failed",
+    (1, 21): "mop_module_stuck",
+    (1, 23): "dust_collection_failed",
+    (1, 24): "dust_bag_full",
+    (1, 25): "dust_collection_failed",
+    (1, 26): "robot_tilted",
+    (1, 160): "air_duct_blocked",
+    (1, 161): "bluetooth_error",
+    (2, 1): "lidar_communication",
+    (2, 2): "host_communication",
+    (2, 3): "internal_error",
+    (3, 1): "relocation_failed",
+    (3, 2): "battery_low",
+    (3, 5): "recharge_failed",
+    (3, 6): "cliff_sensor_blocked",
+    (3, 7): "battery_abnormal",
+    (3, 8): "mop_lift_failure",
+    (3, 9): "dust_collection_interrupted",
+    (3, 10): "air_duct_blocked",
+    (3, 11): "canister_lid_open",
+    (3, 12): "dust_bag_missing",
+    (3, 13): "dust_bag_full",
+    (3, 14): "wheels_slipping",
+    (3, 15): "bluetooth_error",
+    (3, 16): "child_lock",
+}
+# Codes the app does not show (low battery while working, dustbin emptying)
+HIDDEN_FAULTS = {(1, 10), (3, 3), (3, 4)}
+FAULT_OPTIONS = ["none", *dict.fromkeys(FAULTS.values()), "unknown_error"]
+
+
+def fault_key(fault_class: int, code: int) -> str:
+    """Return the fault shown to the user, as the app decides it."""
+    if fault_class == 0 or code == 0 or (fault_class, code) in HIDDEN_FAULTS:
+        return "none"
+    return FAULTS.get((fault_class, code), "unknown_error")
+
+
 # Consumables: Midea field name -> (entity key, lifetime in hours)
 CONSUMABLES = {
     "filter_net_time": ("filter", 150),

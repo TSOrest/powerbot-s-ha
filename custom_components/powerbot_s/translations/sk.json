@@ -90,6 +90,73 @@
       },
       "main_brush_life": {
         "name": "Hlavná kefa"
+      },
+      "cleaning_mode": {
+        "name": "Režim upratovania",
+        "state": {
+          "random": "Náhodný",
+          "arc": "Oblúk",
+          "edge": "Okraje",
+          "spot": "Bodový",
+          "spiral": "Špirála",
+          "bed": "Posteľ",
+          "wide_spiral": "Široká špirála",
+          "auto": "Auto",
+          "area": "Plocha",
+          "room": "Miestnosť",
+          "zone": "Zóna",
+          "path": "Trasa"
+        }
+      },
+      "cleaned_area": {
+        "name": "Upratená plocha"
+      },
+      "cleaning_time": {
+        "name": "Čas upratovania"
+      },
+      "error_code": {
+        "name": "Kód chyby"
+      },
+      "robot_error": {
+        "name": "Chyba",
+        "state": {
+          "none": "No error",
+          "dustbin_missing": "Dustbin is not properly installed",
+          "wheels_stuck": "Wheels are stuck",
+          "wheels_overload": "Wheels are overloaded",
+          "side_brush_tangled": "Side brush is tangled",
+          "main_brush_tangled": "Main brush is tangled",
+          "vacuum_motor_overload": "Vacuum motor overload",
+          "bumper_failure": "Bumper failure",
+          "lidar_failure": "LiDAR sensor failure",
+          "cliff_sensor_failure": "Cliff sensor failure",
+          "robot_tilted": "Robot is tilted",
+          "lidar_blocked": "LiDAR sensor is blocked",
+          "edge_sensor_failure": "Edge sensor failure",
+          "no_go_zone": "No-go zone or virtual wall in the way",
+          "magnetic_interference": "Strong magnetic interference",
+          "mop_missing": "Mopping pad is not installed properly",
+          "wheels_slipping": "Wheels are slipping",
+          "recharge_failed": "Returning to the dock failed",
+          "mop_module_stuck": "Mopping module may be stuck",
+          "dust_collection_failed": "Dust collection failed",
+          "dust_bag_full": "Dust bag is full",
+          "air_duct_blocked": "Air duct is blocked",
+          "bluetooth_error": "Bluetooth error",
+          "lidar_communication": "LiDAR communication error, restart the robot",
+          "host_communication": "Internal communication error, restart the robot",
+          "internal_error": "Internal error, restart the robot",
+          "relocation_failed": "Could not find its position on the map",
+          "battery_low": "Battery is low",
+          "cliff_sensor_blocked": "Cliff sensors are blocked",
+          "battery_abnormal": "Battery problem",
+          "mop_lift_failure": "Mop lifting failure",
+          "dust_collection_interrupted": "Dust collection interrupted",
+          "canister_lid_open": "Canister lid is open",
+          "dust_bag_missing": "Dust bag is not installed",
+          "child_lock": "Child lock is on",
+          "unknown_error": "Unknown error, restart the robot"
+        }
       }
     },
     "binary_sensor": {
@@ -120,6 +187,9 @@
       },
       "do_not_disturb": {
         "name": "Nerušiť"
+      },
+      "schedule": {
+        "name": "Plán {task}"
       }
     },
     "number": {

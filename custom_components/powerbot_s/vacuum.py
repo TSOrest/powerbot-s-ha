@@ -1,6 +1,7 @@
 """Vacuum platform for POWERbot-S (Samsung VR7700)."""
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 from homeassistant.components.vacuum import (
@@ -27,6 +28,14 @@ from .coordinator import PowerBotConfigEntry, PowerBotDataUpdateCoordinator
 from .entity import PowerBotEntity
 
 PARALLEL_UPDATES = 1
+
+# vacuum.send_command "move": direction -> manual control byte
+_DIRECTIONS = {"forward": 1, "back": 2, "left": 3, "right": 4}
+_MANUAL_STOP = 0
+_MOVE_SECONDS = 1.0
+_MOVE_MAX_SECONDS = 5.0
+# vacuum.send_command start modes besides the normal whole-house clean
+_CLEAN_MODES = {"clean_edge": 3, "clean_spot": 4}
 
 _ACTIVITY: dict[str, VacuumActivity] = {
     STATE_CLEANING: VacuumActivity.CLEANING,
@@ -61,6 +70,7 @@ class PowerBotVacuum(PowerBotEntity, StateVacuumEntity):
         | VacuumEntityFeature.STATE
         | VacuumEntityFeature.FAN_SPEED
         | VacuumEntityFeature.LOCATE
+        | VacuumEntityFeature.SEND_COMMAND
     )
 
     def __init__(self, coordinator: PowerBotDataUpdateCoordinator) -> None:
@@ -102,3 +112,37 @@ class PowerBotVacuum(PowerBotEntity, StateVacuumEntity):
         await self.coordinator.async_send(
             protocol.set_suction(*self.coordinator.levels(fan=fan_speed))
         )
+
+    async def async_send_command(
+        self,
+        command: str,
+        params: dict[str, Any] | list[Any] | None = None,
+        **kwargs: Any,
+    ) -> None:
+        """Extra commands: move (a short nudge by hand), clean_edge, clean_spot."""
+        params = params if isinstance(params, dict) else {}
+        if command in _CLEAN_MODES:
+            await self.coordinator.async_send(
+                protocol.start(*self.coordinator.levels(), mode=_CLEAN_MODES[command])
+            )
+            return
+        if command != "move":
+            raise ServiceValidationError(
+                f"Unknown command: {command}. Use move, clean_edge or clean_spot."
+            )
+        direction = params.get("direction", "forward")
+        if direction not in _DIRECTIONS:
+            raise ServiceValidationError(
+                f"Unknown direction: {direction}. Use {', '.join(_DIRECTIONS)}."
+            )
+        try:
+            seconds = float(params.get("duration", _MOVE_SECONDS))
+        except (TypeError, ValueError) as err:
+            raise ServiceValidationError("duration must be a number of seconds") from err
+        seconds = min(max(seconds, 0.0), _MOVE_MAX_SECONDS)
+        await self.coordinator.async_send(protocol.manual(_DIRECTIONS[direction]))
+        try:
+            await asyncio.sleep(seconds)
+        finally:
+            # Always stop, so the robot never keeps driving on its own
+            await self.coordinator.async_send(protocol.manual(_MANUAL_STOP))

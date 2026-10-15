@@ -31,6 +31,12 @@ _LOCATE = bytes([0x35, 0x07, 0, 0, 0, 0, 0])
 _QUERY_WORK_STATE = bytes([0x32, 0x01])
 _QUERY_DND = bytes([0x32, 0x05])
 _QUERY_VOICE = bytes([0x36])
+_QUERY_SCHEDULES = bytes([0x34, 0x01])
+
+_SCHEDULE = 0x24
+_SCHEDULE_ON = 0x06
+_SCHEDULE_OFF = 0x05
+_SCHEDULE_ENTRY = 30
 
 _WORK_MODE_AUTO = 0x08
 
@@ -43,9 +49,20 @@ def build_frame(body: bytes, msg_type: int = _MSG_CONTROL) -> str:
     return frame.hex().upper()
 
 
-def start(fan: int, water: int) -> str:
-    """Start an automatic clean with the given suction and water levels."""
-    return build_frame(bytes([_CONTROL, _START, 0, 2, 0, _WORK_MODE_AUTO, fan, 0, water, 0, 0]))
+def start(fan: int, water: int, mode: int = _WORK_MODE_AUTO) -> str:
+    """Start a clean in the given work mode (whole house by default)."""
+    return build_frame(bytes([_CONTROL, _START, 0, 2, 0, mode, fan, 0, water, 0, 0]))
+
+
+def manual(direction: int) -> str:
+    """Drive by hand: 0 stop, 1 forward, 2 back, 3 left, 4 right."""
+    return build_frame(bytes([_CONTROL, _START, 0, 1, direction, 0, 0, 0, 0, 0, 0]))
+
+
+def schedule_enabled(task_id: int, enabled: bool) -> str:
+    """Turn an existing schedule on or off."""
+    action = _SCHEDULE_ON if enabled else _SCHEDULE_OFF
+    return build_frame(bytes([_SCHEDULE, 0, action, *([0] * 11), task_id]))
 
 
 def dock() -> str:
@@ -107,6 +124,10 @@ def query_voice() -> str:
     return build_frame(_QUERY_VOICE, msg_type=_MSG_QUERY)
 
 
+def query_schedules() -> str:
+    return build_frame(_QUERY_SCHEDULES, msg_type=_MSG_QUERY)
+
+
 @dataclass(frozen=True)
 class WorkState:
     """Settings read from the work-state reply (type 0x03, body 32 01)."""
@@ -116,6 +137,26 @@ class WorkState:
     volume: int
     carpet: bool
     has_mop: bool
+    work_mode: int = 0
+    area: int = 0  # m2 cleaned in the current or last job
+    work_time: int = 0  # minutes
+    fault_class: int = 0
+    fault_code: int = 0
+
+
+@dataclass(frozen=True)
+class Schedule:
+    """A cleaning schedule stored on the robot."""
+
+    task_id: int
+    days: tuple[int, ...]  # 0 = Monday ... 6 = Sunday
+    repeat: bool
+    start: time
+    duration: int  # minutes
+    work_mode: int
+    fan: int
+    water: int
+    enabled: bool
 
 
 @dataclass(frozen=True)
@@ -152,6 +193,12 @@ def parse_work_state(hex_frame: str | None) -> WorkState | None:
         volume=frame[20],
         carpet=bool(frame[28]),
         has_mop=bool(frame[27] & 1),
+        work_mode=frame[16],
+        # Area and time carry extra high bits in byte 33 (scaled by 255, as the app does)
+        area=frame[18] + 255 * (frame[33] & 0x0F if len(frame) > 33 else 0),
+        work_time=frame[23] + 255 * (frame[33] >> 4 if len(frame) > 33 else 0),
+        fault_class=frame[25],
+        fault_code=frame[26],
     )
 
 
@@ -170,3 +217,34 @@ def parse_voice(hex_frame: str | None) -> int | None:
     if (frame := _reply(hex_frame, _QUERY_VOICE, 12)) is None:
         return None
     return frame[11]
+
+
+def parse_schedules(hex_frame: str | None) -> list[Schedule] | None:
+    """Read the schedule list: 30-byte entries from byte 13 (the last ends in the checksum)."""
+    if (frame := _reply(hex_frame, _QUERY_SCHEDULES, 13)) is None:
+        return None
+    schedules: list[Schedule] = []
+    for offset in range(13, len(frame) - 9, _SCHEDULE_ENTRY):
+        week, hour, minute, duration, mode, fan, water, task_id, state = frame[offset : offset + 9]
+        if task_id == 0:
+            break
+        if state > 1:  # 2 = invalid
+            continue
+        try:
+            at = time(hour, minute)
+        except ValueError:
+            continue
+        schedules.append(
+            Schedule(
+                task_id=task_id,
+                days=tuple(day for day in range(7) if week & (1 << day)),
+                repeat=bool(week & 0x80),
+                start=at,
+                duration=duration or 30,
+                work_mode=mode,
+                fan=fan,
+                water=water,
+                enabled=state == 0,
+            )
+        )
+    return schedules

@@ -11,11 +11,11 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import PERCENTAGE, EntityCategory
+from homeassistant.const import PERCENTAGE, EntityCategory, UnitOfArea, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .const import CONSUMABLES, FAN_SPEEDS
+from .const import CONSUMABLES, FAN_SPEEDS, FAULT_OPTIONS, WORK_MODES, fault_key
 from .coordinator import PowerBotConfigEntry, PowerBotDataUpdateCoordinator
 from .entity import PowerBotEntity
 
@@ -27,6 +27,8 @@ class PowerBotSensorDescription(SensorEntityDescription):
     """Describes a POWERbot-S sensor."""
 
     value_fn: Callable[[PowerBotDataUpdateCoordinator], Any]
+    # Needs data only a supported model provides (robot queries, consumables)
+    robot: bool = False
 
 
 def _connection(coordinator: PowerBotDataUpdateCoordinator) -> str:
@@ -63,12 +65,52 @@ SENSORS: tuple[PowerBotSensorDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_connection,
     ),
+    PowerBotSensorDescription(
+        key="cleaning_mode",
+        translation_key="cleaning_mode",
+        device_class=SensorDeviceClass.ENUM,
+        options=list(WORK_MODES.values()),
+        robot=True,
+        value_fn=lambda c: WORK_MODES.get(c.work.work_mode) if c.work else None,
+    ),
+    PowerBotSensorDescription(
+        key="cleaned_area",
+        translation_key="cleaned_area",
+        native_unit_of_measurement=UnitOfArea.SQUARE_METERS,
+        robot=True,
+        value_fn=lambda c: c.work.area if c.work else None,
+    ),
+    PowerBotSensorDescription(
+        key="cleaning_time",
+        translation_key="cleaning_time",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        robot=True,
+        value_fn=lambda c: c.work.work_time if c.work else None,
+    ),
+    PowerBotSensorDescription(
+        key="robot_error",
+        translation_key="robot_error",
+        device_class=SensorDeviceClass.ENUM,
+        options=FAULT_OPTIONS,
+        robot=True,
+        value_fn=lambda c: fault_key(c.work.fault_class, c.work.fault_code) if c.work else None,
+    ),
+    PowerBotSensorDescription(
+        key="error_code",
+        translation_key="error_code",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        robot=True,
+        value_fn=lambda c: f"{c.work.fault_class}.{c.work.fault_code}" if c.work else None,
+    ),
     *(
         PowerBotSensorDescription(
             key=f"{key}_life",
             translation_key=f"{key}_life",
             native_unit_of_measurement=PERCENTAGE,
             state_class=SensorStateClass.MEASUREMENT,
+            robot=True,
             value_fn=lambda c, key=key: c.parts.get(key),
         )
         for key, _ in CONSUMABLES.values()
@@ -86,7 +128,7 @@ async def async_setup_entry(
     async_add_entities(
         PowerBotSensor(coordinator, description)
         for description in SENSORS
-        if coordinator.supported or not description.key.endswith("_life")
+        if coordinator.supported or not description.robot
     )
 
 
