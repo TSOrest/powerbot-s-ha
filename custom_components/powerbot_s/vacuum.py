@@ -94,7 +94,8 @@ class PowerBotVacuum(CoordinatorEntity[PowerBotDataUpdateCoordinator], StateVacu
         | VacuumEntityFeature.FAN_SPEED
         | VacuumEntityFeature.CLEAN_SPOT
         | VacuumEntityFeature.LOCATE
-    
+    )
+
     def __init__(
         self,
         coordinator: PowerBotDataUpdateCoordinator,
