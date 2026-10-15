@@ -1,0 +1,8 @@
+{
+  "entity_component": {
+    "vacuum": {
+      "default": "mdi:robot-vacuum"
+    }
+  },
+  "services": {}
+}
