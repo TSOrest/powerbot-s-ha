@@ -6,10 +6,11 @@ from __future__ import annotations
 
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, Platform
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import PowerBotApiClient
-from .const import CONF_ACCESS_TOKEN, CONF_REFRESH_TOKEN, CONF_REGION, DEFAULT_REGION
+from .const import CONF_ACCESS_TOKEN, CONF_REFRESH_TOKEN, CONF_REGION, DEFAULT_REGION, DOMAIN
 from .coordinator import PowerBotConfigEntry, PowerBotDataUpdateCoordinator
 
 PLATFORMS: list[Platform] = [
@@ -52,6 +53,26 @@ async def async_setup_entry(hass: HomeAssistant, entry: PowerBotConfigEntry) -> 
     coordinator = PowerBotDataUpdateCoordinator(hass, entry, client)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
+
+    issue_id = f"unsupported_model_{coordinator.device_id}"
+    if coordinator.supported:
+        ir.async_delete_issue(hass, DOMAIN, issue_id)
+    else:
+        ir.async_create_issue(
+            hass,
+            DOMAIN,
+            issue_id,
+            is_fixable=False,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key="unsupported_model",
+            translation_placeholders={
+                "name": entry.title,
+                "model": coordinator.model or "?",
+                "sn8": coordinator.sn8 or "?",
+                "plugin": coordinator.plugin or "?",
+            },
+            learn_more_url="https://github.com/TSOrest/powerbot-s-ha/issues",
+        )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True

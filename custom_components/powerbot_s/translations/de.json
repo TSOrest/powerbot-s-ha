@@ -135,5 +135,11 @@
         "name": "Ende Nicht stören"
       }
     }
+  },
+  "issues": {
+    "unsupported_model": {
+      "title": "{name} wird nur angezeigt",
+      "description": "{name} ist ein {model} (Modellcode {sn8}, App-Plugin {plugin}). Diese Integration kann bisher nur den POWERbot-S VR7700 steuern, daher zeigt Home Assistant den Zustand dieses Roboters an, kann ihm aber keine Befehle senden. Bitte eröffne ein Issue auf GitHub mit den obigen Modelldaten, damit die Unterstützung ergänzt werden kann."
+    }
   }
 }

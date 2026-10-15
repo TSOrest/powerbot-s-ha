@@ -135,5 +135,11 @@
         "name": "Do not disturb end"
       }
     }
+  },
+  "issues": {
+    "unsupported_model": {
+      "title": "{name} is shown read-only",
+      "description": "{name} is a {model} (model code {sn8}, app plugin {plugin}). This integration can control only the POWERbot-S VR7700 so far, so Home Assistant shows this robot's state but cannot send it commands. Please open an issue on GitHub with the model details above so support can be added."
+    }
   }
 }

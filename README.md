@@ -36,6 +36,16 @@ Custom Home Assistant integration for the **Samsung VR7700 (POWERbot-S)** robot 
 | Voice | `select` | Voice pack (the robot downloads a new one itself) |
 | Filter / Side brush / Main brush | `sensor` | Remaining life, % (filter 150 h, side brush 100 h, main brush 200 h) |
 
+### Supported models
+
+| Model | Model code | Support |
+|-------|------------|---------|
+| POWERbot-S VR7700 (Europe) | 610VR510 | Full, tested |
+| POWERbot-S VR7700 (North America) | 620VR520 | Full (same app plugin), not tested yet |
+| Any other robot in the POWERbot-S app | — | State and battery only; Home Assistant shows a repair notice with the model details |
+
+The water level control appears only when the robot reports a mop attached.
+
 ### Requirements
 
 - Home Assistant **2025.2** or newer (2026.3+ shows the integration icon)
@@ -96,6 +106,16 @@ logger:
 | Гучність | `number` | Гучність голосу, 0–100 % |
 | Голос | `select` | Голосовий пакет (робот сам завантажує новий) |
 | Фільтр / Бічна щітка / Основна щітка | `sensor` | Залишок ресурсу, % (фільтр 150 год, бічна щітка 100 год, основна 200 год) |
+
+### Підтримувані моделі
+
+| Модель | Код моделі | Підтримка |
+|--------|------------|-----------|
+| POWERbot-S VR7700 (Європа) | 610VR510 | Повна, перевірена |
+| POWERbot-S VR7700 (Північна Америка) | 620VR520 | Повна (той самий плагін застосунку), ще не перевірена |
+| Будь-який інший робот у застосунку POWERbot-S | — | Лише стан і заряд; Home Assistant показує сповіщення з даними моделі |
+
+Керування рівнем води з'являється, лише коли робот повідомляє, що мопа встановлена.
 
 ### Вимоги
 

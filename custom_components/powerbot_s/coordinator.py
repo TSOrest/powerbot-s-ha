@@ -22,6 +22,8 @@ from .const import (
     CONF_DEVICE_ID,
     CONSUMABLES,
     DEFAULT_SN8,
+    SUPPORTED_PROTO_VERSIONS,
+    SUPPORTED_SN8,
     DEFAULT_FAN,
     DEFAULT_WATER,
     DOMAIN,
@@ -79,17 +81,34 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.parts: dict[str, int] = {}
         self._owner_id: str | None = None
         self._polls = 0
+        # Model details from the device list (None if it could not be read)
+        self.sn8: str | None = None
+        self.model: str | None = None
+        self.proto_version: int | None = None
+        self.plugin: str | None = None
+        # Read from the robot: False when it reports no mop attached
+        self.has_mop: bool | None = None
+
+    @property
+    def supported(self) -> bool:
+        """True if the robot takes the commands this integration knows.
+
+        Other models are shown read-only until their control plugin is analysed.
+        If the model could not be read, assume the VR7700 as earlier versions did.
+        """
+        if self.sn8 is None:
+            return True
+        return self.sn8 in SUPPORTED_SN8 and self.proto_version in SUPPORTED_PROTO_VERSIONS
 
     async def _async_setup(self) -> None:
-        """Read what does not change while running: the owner and the voice packs."""
-        sn8 = DEFAULT_SN8
+        """Read what does not change while running: model, owner and voice packs."""
         try:
             for device in await self.client.async_get_devices():
                 if device_id_of(device) == self.device_id:
-                    self._owner_id = device.get("ownerId") or device.get("userId")
-                    product = device.get("product") if isinstance(device.get("product"), dict) else {}
-                    sn8 = device.get("sn8") or product.get("sn8") or DEFAULT_SN8
-            voices = await self.client.async_get_voices(sn8)
+                    self._read_device(device)
+            if not self.supported:
+                return
+            voices = await self.client.async_get_voices(self.sn8 or DEFAULT_SN8)
         except PowerBotAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
         except PowerBotApiError as err:
@@ -100,10 +119,30 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             if str(index).isdigit() and voice.get("title"):
                 self.voices[int(index)] = voice["title"]
 
+    def _read_device(self, device: dict[str, Any]) -> None:
+        self._owner_id = device.get("ownerId") or device.get("userId")
+        product = device.get("product") if isinstance(device.get("product"), dict) else {}
+        panel = device.get("panel") or product.get("plugin")
+        self.sn8 = product.get("sn8") or device.get("sn8") or DEFAULT_SN8
+        self.model = product.get("productModel") or device.get("productModel")
+        proto = product.get("protoVersion", device.get("protoVersion", 0))
+        self.proto_version = int(proto) if str(proto).isdigit() else None
+        if isinstance(panel, dict) and panel.get("name"):
+            self.plugin = f"{panel['name']} {panel.get('versionName') or ''}".strip()
+        if not self.supported:
+            _LOGGER.warning(
+                "%s (sn8 %s, protocol %s, plugin %s) is not fully supported yet; "
+                "showing its state only",
+                self.model or "This robot",
+                self.sn8,
+                self.proto_version,
+                self.plugin,
+            )
+
     async def _async_update_data(self) -> dict[str, Any]:
         try:
             state = await self.client.async_get_device_state(self.device_id)
-            if state is not None and state.get("connected", True):
+            if self.supported and state is not None and state.get("connected", True):
                 await self._async_read_robot(slow=self._polls % SLOW_POLL_EVERY == 0)
         except PowerBotAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
@@ -131,6 +170,7 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if work := protocol.parse_work_state(await self._async_query(protocol.query_work_state())):
             self.volume = work.volume
             self.carpet_mode = work.carpet
+            self.has_mop = work.has_mop
         if not slow:
             return
         if dnd := protocol.parse_dnd(await self._async_query(protocol.query_dnd())):

@@ -21,9 +21,10 @@ async def async_setup_entry(
 ) -> None:
     """Set up the do-not-disturb times."""
     coordinator = entry.runtime_data
-    async_add_entities(
-        [PowerBotDndTime(coordinator, "dnd_start"), PowerBotDndTime(coordinator, "dnd_end")]
-    )
+    if coordinator.supported:
+        async_add_entities(
+            [PowerBotDndTime(coordinator, "dnd_start"), PowerBotDndTime(coordinator, "dnd_end")]
+        )
 
 
 class PowerBotDndTime(PowerBotEntity, TimeEntity):

@@ -37,6 +37,11 @@ PARTS_HOSTS = {
 }
 DEFAULT_SN8 = "610VR510"
 
+# Models whose control plugin (Midea M7, project m7MSLifeSamsung) the command
+# frames come from: VR7700 for Europe and North America, protocol version 0.
+SUPPORTED_SN8 = ("610VR510", "620VR520")
+SUPPORTED_PROTO_VERSIONS = (0,)
+
 # Consumables: Midea field name -> (entity key, lifetime in hours)
 CONSUMABLES = {
     "filter_net_time": ("filter", 150),

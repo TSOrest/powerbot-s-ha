@@ -19,7 +19,8 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the volume number."""
-    async_add_entities([PowerBotVolume(entry.runtime_data)])
+    if entry.runtime_data.supported:
+        async_add_entities([PowerBotVolume(entry.runtime_data)])
 
 
 class PowerBotVolume(PowerBotEntity, NumberEntity):

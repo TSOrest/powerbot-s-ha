@@ -65,6 +65,9 @@ class PowerBotVacuum(PowerBotEntity, StateVacuumEntity):
 
     def __init__(self, coordinator: PowerBotDataUpdateCoordinator) -> None:
         super().__init__(coordinator, None)
+        if not coordinator.supported:
+            # Unknown command set: show the state only
+            self._attr_supported_features = VacuumEntityFeature.STATE
 
     @property
     def activity(self) -> VacuumActivity | None:

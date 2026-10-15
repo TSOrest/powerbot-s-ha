@@ -135,5 +135,11 @@
         "name": "Fin Ne pas déranger"
       }
     }
+  },
+  "issues": {
+    "unsupported_model": {
+      "title": "{name} est en lecture seule",
+      "description": "{name} est un {model} (code modèle {sn8}, plugin de l'app {plugin}). Cette intégration ne sait encore piloter que le POWERbot-S VR7700 : Home Assistant affiche l'état de ce robot mais ne peut pas lui envoyer de commandes. Ouvrez une issue sur GitHub avec les informations ci-dessus pour que sa prise en charge soit ajoutée."
+    }
   }
 }
