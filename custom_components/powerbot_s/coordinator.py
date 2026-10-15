@@ -3,15 +3,16 @@ from __future__ import annotations
 
 import logging
 from dataclasses import replace
-from datetime import time
+from datetime import datetime, time
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
+from homeassistant.util import dt as dt_util
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from . import protocol
+from . import protocol, robot_map
 from .api import (
     PowerBotApiClient,
     PowerBotApiError,
@@ -91,6 +92,11 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.has_mop: bool | None = None
         # Last work-state reply from the robot
         self.work: protocol.WorkState | None = None
+        # Map and rooms from the cloud (None until read)
+        self.map_grid: robot_map.Grid | None = None
+        self.room_grid: robot_map.Grid | None = None
+        self.rooms: dict[int, str] = {}
+        self.map_updated: datetime | None = None
         # Cleaning schedules stored on the robot: task id -> schedule
         self.schedules: dict[int, protocol.Schedule] = {}
 
@@ -193,6 +199,25 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 _LOGGER.debug("Could not read consumables: %s", err)
             else:
                 self.parts = _remaining(parts)
+            await self._async_read_map()
+
+    async def _async_read_map(self) -> None:
+        """Read the map and rooms the app shows; keep the last good copy."""
+        assert self._owner_id
+        try:
+            map_text = await self.client.async_get_map(self.device_id, self._owner_id)
+            room_text, names = await self.client.async_get_rooms(self.device_id, self._owner_id)
+        except PowerBotAuthError:
+            raise
+        except PowerBotApiError as err:
+            _LOGGER.debug("Could not read the map: %s", err)
+            return
+        map_grid = robot_map.decode_map(map_text)
+        room_grid, room_ids = robot_map.decode_rooms(room_text)
+        if (map_grid, room_grid) != (self.map_grid, self.room_grid) and (map_grid or room_grid):
+            self.map_grid, self.room_grid = map_grid, room_grid
+            self.map_updated = dt_util.utcnow()
+        self.rooms = robot_map.room_names(room_ids, names)
 
     @property
     def fan_speed(self) -> str | None:

@@ -204,6 +204,11 @@
       "dnd_end": {
         "name": "Fin Ne pas déranger"
       }
+    },
+    "image": {
+      "map": {
+        "name": "Carte"
+      }
     }
   },
   "issues": {

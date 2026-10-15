@@ -38,6 +38,7 @@ Custom Home Assistant integration for the **Samsung VR7700 (POWERbot-S)** robot 
 | Cleaning mode | `sensor` | Mode of the current or last clean (auto, edge, spot, rooms, zones, …) |
 | Cleaned area / Cleaning time | `sensor` | Area (m²) and time (min) of the current or last clean |
 | Error | `sensor` | What the robot reports is wrong (dustbin missing, brush tangled, …); `Error code` is a disabled diagnostic sensor with the raw code |
+| Map | `image` | The map from the app, with rooms coloured; the `rooms` attribute lists room ids and names |
 | Schedule N | `switch` | Turns a schedule made in the app on or off; attributes show days, start, duration, mode, suction and water |
 
 #### Extra commands (`vacuum.send_command`)
@@ -47,6 +48,7 @@ Custom Home Assistant integration for the **Samsung VR7700 (POWERbot-S)** robot 
 | `move` | `direction`: forward / back / left / right, `duration`: seconds (default 1, max 5) | Drives the robot by hand for a moment, then stops it |
 | `clean_edge` | — | Cleans along the walls (experimental) |
 | `clean_spot` | — | Cleans the spot around the robot (experimental) |
+| `clean_rooms` | `rooms`: list of room names or ids (see the vacuum's `rooms` attribute), `times`: 1–3 | Cleans only those rooms |
 
 ```yaml
 action: vacuum.send_command
@@ -132,6 +134,7 @@ logger:
 | Режим прибирання | `sensor` | Режим поточного або останнього прибирання (авто, вздовж стін, точкове, кімнати, зони, …) |
 | Прибрана площа / Час прибирання | `sensor` | Площа (м²) і час (хв) поточного або останнього прибирання |
 | Помилка | `sensor` | Що робот повідомляє як проблему (немає контейнера, заплутана щітка, …); «Код помилки» — вимкнений діагностичний сенсор із сирим кодом |
+| Карта | `image` | Карта із застосунку з розфарбованими кімнатами; атрибут `rooms` містить номери й назви кімнат |
 | Розклад N | `switch` | Вмикає або вимикає розклад, створений у застосунку; атрибути показують дні, початок, тривалість, режим, всмоктування і воду |
 
 #### Додаткові команди (`vacuum.send_command`)
@@ -141,6 +144,7 @@ logger:
 | `move` | `direction`: forward / back / left / right, `duration`: секунди (типово 1, максимум 5) | Ненадовго рушає робота вручну, потім зупиняє |
 | `clean_edge` | — | Прибирання вздовж стін (експериментально) |
 | `clean_spot` | — | Прибирання навколо робота (експериментально) |
+| `clean_rooms` | `rooms`: список назв або номерів кімнат (див. атрибут `rooms` пилососа), `times`: 1–3 | Прибирає лише ці кімнати |
 
 ### Підтримувані моделі
 
