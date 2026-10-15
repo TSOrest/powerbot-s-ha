@@ -48,6 +48,7 @@
       "powerbot": {
         "state_attributes": {
           "fan_speed": {
+            "name": "Saugleistung",
             "state": {
               "off": "Aus",
               "quiet": "Leise",

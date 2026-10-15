@@ -48,6 +48,7 @@
       "powerbot": {
         "state_attributes": {
           "fan_speed": {
+            "name": "Sací výkon",
             "state": {
               "off": "Vypnuto",
               "quiet": "Tichý",

@@ -48,6 +48,7 @@
       "powerbot": {
         "state_attributes": {
           "fan_speed": {
+            "name": "Потужність всмоктування",
             "state": {
               "off": "Вимкнено",
               "quiet": "Тихо",
@@ -169,7 +170,7 @@
     },
     "select": {
       "water_level": {
-        "name": "Рівень води",
+        "name": "Подача води",
         "state": {
           "off": "Вимкнено",
           "low": "Низький",

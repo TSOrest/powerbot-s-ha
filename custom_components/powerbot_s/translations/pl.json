@@ -48,6 +48,7 @@
       "powerbot": {
         "state_attributes": {
           "fan_speed": {
+            "name": "Moc ssania",
             "state": {
               "off": "Wyłączone",
               "quiet": "Cicho",
