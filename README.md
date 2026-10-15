@@ -1,8 +1,8 @@
 # Samsung POWERbot-S for Home Assistant
 
 [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?logo=homeassistantcommunitystore&logoColor=white)](https://github.com/hacs/integration)
-[![Validate](https://github.com/TSOrest/powerbot-s-ha/actions/workflows/validate.yml/badge.svg)](https://github.com/TSOrest/powerbot-s-ha/actions/workflows/validate.yml)
-[![GitHub Release](https://img.shields.io/github/v/release/TSOrest/powerbot-s-ha?color=blue)](https://github.com/TSOrest/powerbot-s-ha/releases)
+[![Validate](https://img.shields.io/github/actions/workflow/status/TSOrest/powerbot-s-ha/validate.yml?branch=main&label=Validate&logo=github)](https://github.com/TSOrest/powerbot-s-ha/actions/workflows/validate.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/TSOrest/powerbot-s-ha?label=Release&color=blue)](https://github.com/TSOrest/powerbot-s-ha/releases)
 [![Built with Claude AI](https://img.shields.io/badge/Built_with-Claude_AI-FF6B35)](https://anthropic.com)
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=TSOrest&repository=powerbot-s-ha&category=integration)
