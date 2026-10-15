@@ -15,7 +15,7 @@ from homeassistant.const import PERCENTAGE, EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .const import FAN_SPEEDS
+from .const import CONSUMABLES, FAN_SPEEDS
 from .coordinator import PowerBotConfigEntry, PowerBotDataUpdateCoordinator
 from .entity import PowerBotEntity
 
@@ -62,6 +62,16 @@ SENSORS: tuple[PowerBotSensorDescription, ...] = (
         options=["online", "offline"],
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_connection,
+    ),
+    *(
+        PowerBotSensorDescription(
+            key=f"{key}_life",
+            translation_key=f"{key}_life",
+            native_unit_of_measurement=PERCENTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            value_fn=lambda c, key=key: c.parts.get(key),
+        )
+        for key, _ in CONSUMABLES.values()
     ),
 )
 

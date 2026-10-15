@@ -28,6 +28,22 @@ REGION_HOSTS = {
 }
 DEFAULT_REGION = "eu"
 
+# Midea servers that hold consumable counters and the voice pack list
+PARTS_HOSTS = {
+    "eu": "https://api-euca.midea.com",
+    "na": "https://api-ca.midea.com",
+    "global": "https://api-euca.midea.com",
+    "cn": "https://mx-cnca.midea.com",
+}
+DEFAULT_SN8 = "610VR510"
+
+# Consumables: Midea field name -> (entity key, lifetime in hours)
+CONSUMABLES = {
+    "filter_net_time": ("filter", 150),
+    "side_brush_time": ("side_brush", 100),
+    "roll_brush_time": ("main_brush", 200),
+}
+
 # App metadata (from APK manifest). The cloud only lists devices for x-app-env "prod".
 APP_VERSION = "1.2.1.26101001"
 APP_ENV = "prod"

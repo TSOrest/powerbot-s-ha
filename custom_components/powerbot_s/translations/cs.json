@@ -81,6 +81,15 @@
           "online": "Online",
           "offline": "Offline"
         }
+      },
+      "filter_life": {
+        "name": "Filtr"
+      },
+      "side_brush_life": {
+        "name": "Boční kartáč"
+      },
+      "main_brush_life": {
+        "name": "Hlavní kartáč"
       }
     },
     "binary_sensor": {
@@ -100,6 +109,9 @@
           "normal": "Normální",
           "high": "Vysoké"
         }
+      },
+      "voice": {
+        "name": "Hlas"
       }
     },
     "switch": {

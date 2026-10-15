@@ -1,4 +1,4 @@
-"""Select platform for POWERbot-S: mop water level."""
+"""Select platform for POWERbot-S: mop water level and voice pack."""
 from __future__ import annotations
 
 from homeassistant.components.select import SelectEntity
@@ -19,8 +19,12 @@ async def async_setup_entry(
     entry: PowerBotConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Set up the water level select."""
-    async_add_entities([PowerBotWaterLevel(entry.runtime_data)])
+    """Set up the selects."""
+    coordinator = entry.runtime_data
+    entities: list[SelectEntity] = [PowerBotWaterLevel(coordinator)]
+    if coordinator.voices:
+        entities.append(PowerBotVoice(coordinator))
+    async_add_entities(entities)
 
 
 class PowerBotWaterLevel(PowerBotEntity, SelectEntity):
@@ -42,4 +46,26 @@ class PowerBotWaterLevel(PowerBotEntity, SelectEntity):
             protocol.set_suction(*self.coordinator.levels(water=option))
         )
         self.coordinator.last_water = option
+        self.async_write_ha_state()
+
+
+class PowerBotVoice(PowerBotEntity, SelectEntity):
+    """Voice pack. The robot downloads a newly chosen pack by itself."""
+
+    _attr_translation_key = "voice"
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, coordinator: PowerBotDataUpdateCoordinator) -> None:
+        super().__init__(coordinator, "voice")
+        self._attr_options = list(coordinator.voices.values())
+
+    @property
+    def current_option(self) -> str | None:
+        voice = self.coordinator.voice
+        return self.coordinator.voices.get(voice) if voice is not None else None
+
+    async def async_select_option(self, option: str) -> None:
+        index = next(i for i, name in self.coordinator.voices.items() if name == option)
+        await self.coordinator.async_send(protocol.select_voice(index))
+        self.coordinator.voice = index
         self.async_write_ha_state()

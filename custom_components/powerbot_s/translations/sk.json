@@ -81,6 +81,15 @@
           "online": "Online",
           "offline": "Offline"
         }
+      },
+      "filter_life": {
+        "name": "Filter"
+      },
+      "side_brush_life": {
+        "name": "Bočná kefa"
+      },
+      "main_brush_life": {
+        "name": "Hlavná kefa"
       }
     },
     "binary_sensor": {
@@ -100,6 +109,9 @@
           "normal": "Normálne",
           "high": "Vysoké"
         }
+      },
+      "voice": {
+        "name": "Hlas"
       }
     },
     "switch": {

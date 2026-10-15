@@ -17,6 +17,15 @@
         "state": {
           "offline": "mdi:wifi-off"
         }
+      },
+      "filter_life": {
+        "default": "mdi:air-filter"
+      },
+      "side_brush_life": {
+        "default": "mdi:brush"
+      },
+      "main_brush_life": {
+        "default": "mdi:broom"
       }
     },
     "binary_sensor": {
@@ -33,6 +42,9 @@
         "state": {
           "off": "mdi:water-off"
         }
+      },
+      "voice": {
+        "default": "mdi:account-voice"
       }
     },
     "switch": {

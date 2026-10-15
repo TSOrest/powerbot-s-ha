@@ -34,7 +34,6 @@ class PowerBotDndTime(PowerBotEntity, TimeEntity):
     """
 
     _attr_entity_category = EntityCategory.CONFIG
-    _attr_assumed_state = True
 
     def __init__(self, coordinator: PowerBotDataUpdateCoordinator, key: str) -> None:
         super().__init__(coordinator, key)

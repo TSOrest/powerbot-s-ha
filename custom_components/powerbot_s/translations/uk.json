@@ -81,6 +81,15 @@
           "online": "Онлайн",
           "offline": "Офлайн"
         }
+      },
+      "filter_life": {
+        "name": "Фільтр"
+      },
+      "side_brush_life": {
+        "name": "Бічна щітка"
+      },
+      "main_brush_life": {
+        "name": "Основна щітка"
       }
     },
     "binary_sensor": {
@@ -100,6 +109,9 @@
           "normal": "Нормальний",
           "high": "Високий"
         }
+      },
+      "voice": {
+        "name": "Голос"
       }
     },
     "switch": {

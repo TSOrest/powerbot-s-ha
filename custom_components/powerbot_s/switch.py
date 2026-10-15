@@ -26,15 +26,10 @@ async def async_setup_entry(
 
 
 class PowerBotCarpetMode(PowerBotEntity, SwitchEntity):
-    """Carpet detection: raise suction on carpets.
-
-    The cloud state does not report this setting, so the switch shows the
-    last value set from Home Assistant.
-    """
+    """Carpet detection: raise suction on carpets."""
 
     _attr_translation_key = "carpet_mode"
     _attr_entity_category = EntityCategory.CONFIG
-    _attr_assumed_state = True
 
     def __init__(self, coordinator: PowerBotDataUpdateCoordinator) -> None:
         super().__init__(coordinator, "carpet_mode")
@@ -56,15 +51,10 @@ class PowerBotCarpetMode(PowerBotEntity, SwitchEntity):
 
 
 class PowerBotDoNotDisturb(PowerBotEntity, SwitchEntity):
-    """Do not disturb: the robot stays quiet between the start and end times.
-
-    Like carpet mode, the cloud state does not report it, so the switch shows
-    the last value set from Home Assistant.
-    """
+    """Do not disturb: the robot stays quiet between the start and end times."""
 
     _attr_translation_key = "do_not_disturb"
     _attr_entity_category = EntityCategory.CONFIG
-    _attr_assumed_state = True
 
     def __init__(self, coordinator: PowerBotDataUpdateCoordinator) -> None:
         super().__init__(coordinator, "do_not_disturb")

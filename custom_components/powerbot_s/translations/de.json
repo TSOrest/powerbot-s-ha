@@ -81,6 +81,15 @@
           "online": "Online",
           "offline": "Offline"
         }
+      },
+      "filter_life": {
+        "name": "Filter"
+      },
+      "side_brush_life": {
+        "name": "Seitenbürste"
+      },
+      "main_brush_life": {
+        "name": "Hauptbürste"
       }
     },
     "binary_sensor": {
@@ -100,6 +109,9 @@
           "normal": "Normal",
           "high": "Hoch"
         }
+      },
+      "voice": {
+        "name": "Sprache"
       }
     },
     "switch": {

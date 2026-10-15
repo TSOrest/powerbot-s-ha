@@ -23,11 +23,10 @@ async def async_setup_entry(
 
 
 class PowerBotVolume(PowerBotEntity, NumberEntity):
-    """Voice volume. The cloud state does not report it, so this shows the last value set."""
+    """Voice volume."""
 
     _attr_translation_key = "volume"
     _attr_entity_category = EntityCategory.CONFIG
-    _attr_assumed_state = True
     _attr_native_min_value = 0
     _attr_native_max_value = 100
     _attr_native_step = 1

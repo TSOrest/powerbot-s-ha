@@ -81,6 +81,15 @@
           "online": "En ligne",
           "offline": "Hors ligne"
         }
+      },
+      "filter_life": {
+        "name": "Filtre"
+      },
+      "side_brush_life": {
+        "name": "Brosse latérale"
+      },
+      "main_brush_life": {
+        "name": "Brosse principale"
       }
     },
     "binary_sensor": {
@@ -100,6 +109,9 @@
           "normal": "Normal",
           "high": "Élevé"
         }
+      },
+      "voice": {
+        "name": "Voix"
       }
     },
     "switch": {
