@@ -94,6 +94,87 @@ The water level control appears only when the robot reports a mop attached.
 
 The robot on your account is added automatically. If the account has several robots, you pick one from a list (add the integration again for each robot). If the stored login ever stops working, Home Assistant asks you to sign in again.
 
+### Dashboard
+
+On the device page Home Assistant only groups entities into Controls, Configuration, Sensors and Diagnostic; an integration cannot add its own groups there. For your own grouping, add a dashboard: Settings → Dashboards → Add dashboard → New dashboard from scratch, then ⋮ → Edit → ⋮ → Raw configuration editor, and paste the YAML below. Replace `powerbot` with your robot's entity id prefix (see the vacuum entity), and add a `switch.…_schedule_N` tile for each schedule.
+
+```yaml
+type: sections
+title: POWERbot
+sections:
+  - type: grid
+    cards:
+      - type: heading
+        heading: Control
+      - type: tile
+        entity: vacuum.powerbot
+        features:
+          - type: vacuum-commands
+            commands: [start_pause, stop, return_home, locate]
+        grid_options:
+          columns: full
+      - type: picture-entity
+        entity: image.powerbot_map
+        show_state: false
+        grid_options:
+          columns: full
+      - type: tile
+        entity: sensor.powerbot_battery
+      - type: tile
+        entity: sensor.powerbot_error
+      - type: tile
+        entity: select.powerbot_water_level
+      - type: tile
+        entity: switch.powerbot_carpet_mode
+  - type: grid
+    cards:
+      - type: heading
+        heading: Schedule
+      - type: tile
+        entity: switch.powerbot_schedule_1
+      - type: tile
+        entity: switch.powerbot_do_not_disturb
+      - type: tile
+        entity: time.powerbot_do_not_disturb_start
+      - type: tile
+        entity: time.powerbot_do_not_disturb_end
+  - type: grid
+    cards:
+      - type: heading
+        heading: Sound
+      - type: tile
+        entity: number.powerbot_volume
+        features:
+          - type: numeric-input
+            style: slider
+        grid_options:
+          columns: full
+      - type: tile
+        entity: select.powerbot_voice
+        grid_options:
+          columns: full
+  - type: grid
+    cards:
+      - type: heading
+        heading: About the device
+      - type: tile
+        entity: sensor.powerbot_status
+      - type: tile
+        entity: sensor.powerbot_cleaning_mode
+      - type: tile
+        entity: sensor.powerbot_cleaned_area
+      - type: tile
+        entity: sensor.powerbot_cleaning_time
+      - type: tile
+        entity: sensor.powerbot_filter
+      - type: tile
+        entity: sensor.powerbot_side_brush
+      - type: tile
+        entity: sensor.powerbot_main_brush
+      - type: tile
+        entity: binary_sensor.powerbot_connectivity
+```
+
 ### Troubleshooting
 
 Enable debug logging and check the HA log:
@@ -178,6 +259,87 @@ logger:
 2. Увійдіть з email і паролем від додатку POWERbot-S
 
 Робот з вашого акаунта додається автоматично. Якщо на акаунті кілька роботів, ви обираєте одного зі списку (для кожного робота інтеграцію додають окремо). Якщо збережений вхід перестане працювати, Home Assistant попросить увійти знову.
+
+### Панель
+
+На сторінці пристрою Home Assistant групує сутності лише на Керування, Налаштування, Сенсори й Діагностику; інтеграція не може додати там власні групи. Для власного групування створіть панель: Налаштування → Панелі → Додати панель → Нова панель з нуля, далі ⋮ → Редагувати → ⋮ → Редактор сирої конфігурації, і вставте YAML нижче. Замініть `powerbot` на префікс сутностей вашого робота (див. сутність пилососа) і додайте плитку `switch.…_schedule_N` для кожного розкладу.
+
+```yaml
+type: sections
+title: POWERbot
+sections:
+  - type: grid
+    cards:
+      - type: heading
+        heading: Керування
+      - type: tile
+        entity: vacuum.powerbot
+        features:
+          - type: vacuum-commands
+            commands: [start_pause, stop, return_home, locate]
+        grid_options:
+          columns: full
+      - type: picture-entity
+        entity: image.powerbot_map
+        show_state: false
+        grid_options:
+          columns: full
+      - type: tile
+        entity: sensor.powerbot_battery
+      - type: tile
+        entity: sensor.powerbot_error
+      - type: tile
+        entity: select.powerbot_water_level
+      - type: tile
+        entity: switch.powerbot_carpet_mode
+  - type: grid
+    cards:
+      - type: heading
+        heading: Розклад
+      - type: tile
+        entity: switch.powerbot_schedule_1
+      - type: tile
+        entity: switch.powerbot_do_not_disturb
+      - type: tile
+        entity: time.powerbot_do_not_disturb_start
+      - type: tile
+        entity: time.powerbot_do_not_disturb_end
+  - type: grid
+    cards:
+      - type: heading
+        heading: Звук
+      - type: tile
+        entity: number.powerbot_volume
+        features:
+          - type: numeric-input
+            style: slider
+        grid_options:
+          columns: full
+      - type: tile
+        entity: select.powerbot_voice
+        grid_options:
+          columns: full
+  - type: grid
+    cards:
+      - type: heading
+        heading: Про пристрій
+      - type: tile
+        entity: sensor.powerbot_status
+      - type: tile
+        entity: sensor.powerbot_cleaning_mode
+      - type: tile
+        entity: sensor.powerbot_cleaned_area
+      - type: tile
+        entity: sensor.powerbot_cleaning_time
+      - type: tile
+        entity: sensor.powerbot_filter
+      - type: tile
+        entity: sensor.powerbot_side_brush
+      - type: tile
+        entity: sensor.powerbot_main_brush
+      - type: tile
+        entity: binary_sensor.powerbot_connectivity
+```
 
 ### Діагностика
 
