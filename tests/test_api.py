@@ -135,3 +135,22 @@ async def test_rename_room_posts_name(hass: HomeAssistant, aioclient_mock) -> No
     client = PowerBotApiClient(async_get_clientsession(hass), "a@b.c", "pw", access_token="t")
     await client.async_rename_room("111", "u1", 5, "Кухня")
     assert aioclient_mock.mock_calls[-1][2] == {"deviceId": "111", "userId": "u1", "roomNo": 5, "roomName": "Кухня"}
+
+
+async def test_history_and_firmware_requests(hass: HomeAssistant, aioclient_mock) -> None:
+    from custom_components.powerbot_s.const import APP_VERSION, PARTS_HOSTS
+
+    host = PARTS_HOSTS["eu"]
+    aioclient_mock.post(
+        f"{host}/v2/app2pro/m7/clean/record/year/get", json={"code": "0", "data": {"total": {"count": "3"}}}
+    )
+    aioclient_mock.post(
+        f"{host}/v2/app2pro/ota/status/get", json={"code": "0", "data": {"firmware": {"currVersion": "1"}}}
+    )
+    client = PowerBotApiClient(async_get_clientsession(hass), "a@b.c", "pw", access_token="t")
+    assert await client.async_get_history("111", "u1", "2026-10-01") == {"total": {"count": "3"}}
+    assert aioclient_mock.mock_calls[-1][2] == {
+        "deviceId": "111", "userId": "u1", "end_month": "2026-10-01", "record_from": 1, "record_to": 1
+    }
+    assert await client.async_get_firmware("111", "u1") == {"firmware": {"currVersion": "1"}}
+    assert aioclient_mock.mock_calls[-1][2] == {"applianceID": "111", "userId": "u1", "appVersion": APP_VERSION}

@@ -158,6 +158,21 @@
           "child_lock": "Child lock is on",
           "unknown_error": "Unknown error, restart the robot"
         }
+      },
+      "total_cleaning_time": {
+        "name": "Celkový čas upratovania"
+      },
+      "total_cleaned_area": {
+        "name": "Celková uprataná plocha"
+      },
+      "total_cleanings": {
+        "name": "Počet upratovaní"
+      },
+      "last_clean": {
+        "name": "Posledné upratovanie"
+      },
+      "firmware": {
+        "name": "Firmvér"
       }
     },
     "binary_sensor": {
@@ -202,6 +217,9 @@
       },
       "schedule": {
         "name": "Plán {task}"
+      },
+      "child_lock": {
+        "name": "Detská zámka"
       }
     },
     "number": {

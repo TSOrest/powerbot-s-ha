@@ -310,6 +310,32 @@ class PowerBotApiClient:
             data = data.get("data", data.get("map"))
         return (data if isinstance(data, str) else None), names
 
+    async def async_get_history(
+        self, device_id: str, user_id: str, month: str, count: int = 1
+    ) -> dict[str, Any]:
+        """Return cleaning totals and the newest records; month is "YYYY-MM-01"."""
+        result = await self._midea_request(
+            "POST",
+            "/v2/app2pro/m7/clean/record/year/get",
+            json={
+                "deviceId": device_id,
+                "userId": user_id,
+                "end_month": month,
+                "record_from": 1,
+                "record_to": count,
+            },
+        )
+        return result if isinstance(result, dict) else {}
+
+    async def async_get_firmware(self, device_id: str, user_id: str) -> dict[str, Any]:
+        """Return firmware and Wi-Fi module versions and whether updates exist."""
+        result = await self._midea_request(
+            "POST",
+            "/v2/app2pro/ota/status/get",
+            json={"applianceID": device_id, "userId": user_id, "appVersion": APP_VERSION},
+        )
+        return result if isinstance(result, dict) else {}
+
     async def async_rename_room(
         self, device_id: str, user_id: str, room_id: int, name: str
     ) -> None:

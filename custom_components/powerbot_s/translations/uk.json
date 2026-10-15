@@ -158,6 +158,21 @@
           "child_lock": "Увімкнено блокування від дітей",
           "unknown_error": "Невідома помилка, перезапустіть робота"
         }
+      },
+      "total_cleaning_time": {
+        "name": "Загальний час прибирання"
+      },
+      "total_cleaned_area": {
+        "name": "Загальна прибрана площа"
+      },
+      "total_cleanings": {
+        "name": "Кількість прибирань"
+      },
+      "last_clean": {
+        "name": "Останнє прибирання"
+      },
+      "firmware": {
+        "name": "Прошивка"
       }
     },
     "binary_sensor": {
@@ -202,6 +217,9 @@
       },
       "schedule": {
         "name": "Розклад {task}"
+      },
+      "child_lock": {
+        "name": "Блокування від дітей"
       }
     },
     "number": {

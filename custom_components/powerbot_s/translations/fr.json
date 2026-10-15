@@ -158,6 +158,21 @@
           "child_lock": "Child lock is on",
           "unknown_error": "Unknown error, restart the robot"
         }
+      },
+      "total_cleaning_time": {
+        "name": "Temps de nettoyage total"
+      },
+      "total_cleaned_area": {
+        "name": "Surface nettoyée totale"
+      },
+      "total_cleanings": {
+        "name": "Nombre de nettoyages"
+      },
+      "last_clean": {
+        "name": "Dernier nettoyage"
+      },
+      "firmware": {
+        "name": "Micrologiciel"
       }
     },
     "binary_sensor": {
@@ -202,6 +217,9 @@
       },
       "schedule": {
         "name": "Programmation {task}"
+      },
+      "child_lock": {
+        "name": "Sécurité enfant"
       }
     },
     "number": {
