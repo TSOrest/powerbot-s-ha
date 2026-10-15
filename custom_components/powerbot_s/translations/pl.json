@@ -221,6 +221,11 @@
       "map": {
         "name": "Mapa"
       }
+    },
+    "text": {
+      "room_name": {
+        "name": "Nazwa pokoju {room}"
+      }
     }
   },
   "issues": {

@@ -260,6 +260,17 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if schedule := self.schedules.get(task_id):
             self.schedules[task_id] = replace(schedule, enabled=enabled)
 
+    async def async_rename_room(self, room_id: int, name: str) -> None:
+        """Rename a room in the cloud so the app shows the same name."""
+        if not self._owner_id:
+            raise HomeAssistantError("The robot's owner is unknown; reload the integration")
+        try:
+            await self.client.async_rename_room(self.device_id, self._owner_id, room_id, name)
+        except PowerBotApiError as err:
+            raise HomeAssistantError(f"Could not rename the room: {err}") from err
+        self.rooms[room_id] = name
+        self.async_update_listeners()
+
     async def async_send(self, frame: str) -> None:
         """Send a command frame and refresh the state."""
         try:

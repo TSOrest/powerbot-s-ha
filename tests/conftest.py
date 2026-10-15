@@ -92,6 +92,9 @@ def mock_api():
             "custom_components.powerbot_s.api.PowerBotApiClient.async_get_rooms",
             AsyncMock(return_value=(ROOMS, ROOM_NAMES)),
         ) as rooms,
+        patch(
+            "custom_components.powerbot_s.api.PowerBotApiClient.async_rename_room", AsyncMock()
+        ) as rename_room,
     ):
         yield {
             "login": login,
@@ -102,6 +105,7 @@ def mock_api():
             "parts": parts,
             "map": robot_map,
             "rooms": rooms,
+            "rename_room": rename_room,
         }
 
 

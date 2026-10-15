@@ -310,6 +310,16 @@ class PowerBotApiClient:
             data = data.get("data", data.get("map"))
         return (data if isinstance(data, str) else None), names
 
+    async def async_rename_room(
+        self, device_id: str, user_id: str, room_id: int, name: str
+    ) -> None:
+        """Rename a room, as the app does (names live in the cloud)."""
+        await self._midea_request(
+            "POST",
+            "/v2/app2pro/m7/partition/room/update",
+            json={"deviceId": device_id, "userId": user_id, "roomNo": room_id, "roomName": name},
+        )
+
     async def async_get_voices(self, sn8: str) -> list[dict[str, Any]]:
         """Return the voice packs available for a model."""
         result = await self._midea_request(

@@ -221,6 +221,11 @@
       "map": {
         "name": "Карта"
       }
+    },
+    "text": {
+      "room_name": {
+        "name": "Назва кімнати {room}"
+      }
     }
   },
   "issues": {

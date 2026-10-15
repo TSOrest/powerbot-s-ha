@@ -87,3 +87,16 @@ async def test_map_image_and_rooms(hass: HomeAssistant, hass_client, mock_api) -
             {"entity_id": "vacuum.kitchen", "command": "clean_rooms", "params": {"rooms": ["Attic"]}},
             blocking=True,
         )
+
+
+async def test_rename_room(hass: HomeAssistant, mock_api) -> None:
+    entry = _entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert hass.states.get("text.kitchen_room_1_name").state == "Kitchen"
+    await hass.services.async_call(
+        "text", "set_value", {"entity_id": "text.kitchen_room_1_name", "value": " Кухня "}, blocking=True
+    )
+    mock_api["rename_room"].assert_awaited_once_with("111", "u1", 1, "Кухня")
+    assert hass.states.get("text.kitchen_room_1_name").state == "Кухня"
+    assert hass.states.get("vacuum.kitchen").attributes["rooms"][1] == "Кухня"

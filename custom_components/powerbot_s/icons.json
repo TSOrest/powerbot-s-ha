@@ -108,6 +108,11 @@
       "map": {
         "default": "mdi:floor-plan"
       }
+    },
+    "text": {
+      "room_name": {
+        "default": "mdi:door"
+      }
     }
   }
 }

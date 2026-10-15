@@ -221,6 +221,11 @@
       "map": {
         "name": "Carte"
       }
+    },
+    "text": {
+      "room_name": {
+        "name": "Nom de la pièce {room}"
+      }
     }
   },
   "issues": {
