@@ -25,6 +25,7 @@ class PowerBotEntity(CoordinatorEntity[PowerBotDataUpdateCoordinator]):
             model=coordinator.model or MODEL,
             model_id=coordinator.sn8,
             serial_number=device_id,
+            sw_version=coordinator.firmware,
         )
 
     @property

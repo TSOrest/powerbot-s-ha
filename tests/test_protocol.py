@@ -41,7 +41,8 @@ def test_parse_replies() -> None:
 
     work = protocol.parse_work_state(REPLIES[protocol.query_work_state()])
     assert work == protocol.WorkState(
-        fan=1, water=3, volume=99, carpet=True, has_mop=True, work_mode=8, area=0, work_time=0
+        fan=1, water=3, volume=99, carpet=True, has_mop=True, work_mode=8, area=0, work_time=0,
+        child_lock=False,
     )
     dnd = protocol.parse_dnd(REPLIES[protocol.query_dnd()])
     assert dnd == protocol.DoNotDisturb(enabled=True, start=time(22, 0), end=time(8, 0))

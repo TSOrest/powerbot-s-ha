@@ -90,6 +90,7 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.plugin: str | None = None
         # Read from the robot: False when it reports no mop attached
         self.has_mop: bool | None = None
+        self.child_lock: bool | None = None
         # Last work-state reply from the robot
         self.work: protocol.WorkState | None = None
         # Map and rooms from the cloud (None until read)
@@ -97,6 +98,13 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.room_grid: robot_map.Grid | None = None
         self.rooms: dict[int, str] = {}
         self.map_updated: datetime | None = None
+        # Cleaning totals (minutes, count, m2) and when the last clean started
+        self.totals: dict[str, float] = {}
+        self.last_clean: datetime | None = None
+        # Firmware version and whether the cloud offers an update
+        self.firmware: str | None = None
+        self.firmware_update: bool | None = None
+        self.module_version: str | None = None
         # Cleaning schedules stored on the robot: task id -> schedule
         self.schedules: dict[int, protocol.Schedule] = {}
 
@@ -119,6 +127,7 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     self._read_device(device)
             if not self.supported:
                 return
+            await self._async_read_firmware()
             voices = await self.client.async_get_voices(self.sn8 or DEFAULT_SN8)
         except PowerBotAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
@@ -183,6 +192,8 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             self.carpet_mode = work.carpet
             self.has_mop = work.has_mop
             self.work = work
+            if work.child_lock is not None:
+                self.child_lock = work.child_lock
         if not slow:
             return
         if dnd := protocol.parse_dnd(await self._async_query(protocol.query_dnd())):
@@ -199,7 +210,45 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 _LOGGER.debug("Could not read consumables: %s", err)
             else:
                 self.parts = _remaining(parts)
+            await self._async_read_history()
             await self._async_read_map()
+
+    async def _async_read_firmware(self) -> None:
+        if not self._owner_id:
+            return
+        try:
+            ota = await self.client.async_get_firmware(self.device_id, self._owner_id)
+        except PowerBotAuthError:
+            raise
+        except PowerBotApiError as err:
+            _LOGGER.debug("Could not read the firmware version: %s", err)
+            return
+        firmware = ota.get("firmware") if isinstance(ota.get("firmware"), dict) else {}
+        module = ota.get("module") if isinstance(ota.get("module"), dict) else {}
+        self.firmware = firmware.get("currVersion") or None
+        self.module_version = module.get("currVersion") or None
+        if firmware or module:
+            self.firmware_update = "1" in (str(firmware.get("status")), str(module.get("status")))
+
+    async def _async_read_history(self) -> None:
+        """Read cleaning totals and the start of the last clean from the cloud."""
+        assert self._owner_id
+        month = dt_util.now().strftime("%Y-%m-01")
+        try:
+            history = await self.client.async_get_history(self.device_id, self._owner_id, month)
+        except PowerBotAuthError:
+            raise
+        except PowerBotApiError as err:
+            _LOGGER.debug("Could not read the cleaning history: %s", err)
+            return
+        self.totals = _totals(history.get("total"))
+        records = history.get("list")
+        if records and isinstance(records[0], dict):
+            started = dt_util.parse_datetime(str(records[0].get("start_stamp") or ""))
+            if started is not None:
+                self.last_clean = dt_util.as_utc(
+                    started if started.tzinfo else started.replace(tzinfo=dt_util.get_default_time_zone())
+                )
 
     async def _async_read_map(self) -> None:
         """Read the map and rooms the app shows; keep the last good copy."""
@@ -260,6 +309,17 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if schedule := self.schedules.get(task_id):
             self.schedules[task_id] = replace(schedule, enabled=enabled)
 
+    async def async_rename_room(self, room_id: int, name: str) -> None:
+        """Rename a room in the cloud so the app shows the same name."""
+        if not self._owner_id:
+            raise HomeAssistantError("The robot's owner is unknown; reload the integration")
+        try:
+            await self.client.async_rename_room(self.device_id, self._owner_id, room_id, name)
+        except PowerBotApiError as err:
+            raise HomeAssistantError(f"Could not rename the room: {err}") from err
+        self.rooms[room_id] = name
+        self.async_update_listeners()
+
     async def async_send(self, frame: str) -> None:
         """Send a command frame and refresh the state."""
         try:
@@ -284,4 +344,17 @@ def _remaining(parts: dict[str, Any]) -> dict[str, int]:
         except (KeyError, TypeError, ValueError):
             continue
         result[key] = max(0, int(100 * (life_hours - used_hours) / life_hours))
+    return result
+
+
+def _totals(total: Any) -> dict[str, float]:
+    """Cleaning totals: worktime in minutes, count and area in m2."""
+    if not isinstance(total, dict):
+        return {}
+    result: dict[str, float] = {}
+    for key in ("worktime", "count", "area"):
+        try:
+            result[key] = float(total[key])
+        except (KeyError, TypeError, ValueError):
+            continue
     return result

@@ -48,6 +48,7 @@
       "powerbot": {
         "state_attributes": {
           "fan_speed": {
+            "name": "Puissance d'aspiration",
             "state": {
               "off": "Arrêt",
               "quiet": "Silencieux",
@@ -157,6 +158,21 @@
           "child_lock": "Child lock is on",
           "unknown_error": "Unknown error, restart the robot"
         }
+      },
+      "total_cleaning_time": {
+        "name": "Temps de nettoyage total"
+      },
+      "total_cleaned_area": {
+        "name": "Surface nettoyée totale"
+      },
+      "total_cleanings": {
+        "name": "Nombre de nettoyages"
+      },
+      "last_clean": {
+        "name": "Dernier nettoyage"
+      },
+      "firmware": {
+        "name": "Micrologiciel"
       }
     },
     "binary_sensor": {
@@ -179,6 +195,17 @@
       },
       "voice": {
         "name": "Voix"
+      },
+      "suction": {
+        "name": "Puissance d'aspiration",
+        "state": {
+          "off": "Arrêt",
+          "quiet": "Silencieux",
+          "low": "Faible",
+          "normal": "Normal",
+          "turbo": "Turbo",
+          "max": "Max"
+        }
       }
     },
     "switch": {
@@ -190,6 +217,9 @@
       },
       "schedule": {
         "name": "Programmation {task}"
+      },
+      "child_lock": {
+        "name": "Sécurité enfant"
       }
     },
     "number": {
@@ -208,6 +238,11 @@
     "image": {
       "map": {
         "name": "Carte"
+      }
+    },
+    "text": {
+      "room_name": {
+        "name": "Nom de la pièce {room}"
       }
     }
   },

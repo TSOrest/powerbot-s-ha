@@ -25,7 +25,13 @@ async def async_setup_entry(
     coordinator = entry.runtime_data
     if not coordinator.supported:
         return
-    async_add_entities([PowerBotCarpetMode(coordinator), PowerBotDoNotDisturb(coordinator)])
+    async_add_entities(
+        [
+            PowerBotCarpetMode(coordinator),
+            PowerBotDoNotDisturb(coordinator),
+            PowerBotChildLock(coordinator),
+        ]
+    )
 
     known: set[int] = set()
 
@@ -41,10 +47,9 @@ async def async_setup_entry(
 
 
 class PowerBotCarpetMode(PowerBotEntity, SwitchEntity):
-    """Carpet detection: raise suction on carpets."""
+    """Carpet detection: raise suction on carpets; can be changed during a clean."""
 
     _attr_translation_key = "carpet_mode"
-    _attr_entity_category = EntityCategory.CONFIG
 
     def __init__(self, coordinator: PowerBotDataUpdateCoordinator) -> None:
         super().__init__(coordinator, "carpet_mode")
@@ -56,6 +61,31 @@ class PowerBotCarpetMode(PowerBotEntity, SwitchEntity):
     async def _async_set(self, enabled: bool) -> None:
         await self.coordinator.async_send(protocol.carpet_mode(enabled))
         self.coordinator.carpet_mode = enabled
+        self.async_write_ha_state()
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        await self._async_set(True)
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        await self._async_set(False)
+
+
+class PowerBotChildLock(PowerBotEntity, SwitchEntity):
+    """Child lock: the robot's buttons do nothing while it is on."""
+
+    _attr_translation_key = "child_lock"
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, coordinator: PowerBotDataUpdateCoordinator) -> None:
+        super().__init__(coordinator, "child_lock")
+
+    @property
+    def is_on(self) -> bool | None:
+        return self.coordinator.child_lock
+
+    async def _async_set(self, enabled: bool) -> None:
+        await self.coordinator.async_send(protocol.child_lock(enabled))
+        self.coordinator.child_lock = enabled
         self.async_write_ha_state()
 
     async def async_turn_on(self, **kwargs: Any) -> None:

@@ -48,6 +48,7 @@
       "powerbot": {
         "state_attributes": {
           "fan_speed": {
+            "name": "Saugleistung",
             "state": {
               "off": "Aus",
               "quiet": "Leise",
@@ -157,6 +158,21 @@
           "child_lock": "Child lock is on",
           "unknown_error": "Unknown error, restart the robot"
         }
+      },
+      "total_cleaning_time": {
+        "name": "Gesamte Reinigungszeit"
+      },
+      "total_cleaned_area": {
+        "name": "Gesamte gereinigte Fläche"
+      },
+      "total_cleanings": {
+        "name": "Reinigungen gesamt"
+      },
+      "last_clean": {
+        "name": "Letzte Reinigung"
+      },
+      "firmware": {
+        "name": "Firmware"
       }
     },
     "binary_sensor": {
@@ -179,6 +195,17 @@
       },
       "voice": {
         "name": "Sprache"
+      },
+      "suction": {
+        "name": "Saugleistung",
+        "state": {
+          "off": "Aus",
+          "quiet": "Leise",
+          "low": "Niedrig",
+          "normal": "Normal",
+          "turbo": "Turbo",
+          "max": "Max"
+        }
       }
     },
     "switch": {
@@ -190,6 +217,9 @@
       },
       "schedule": {
         "name": "Zeitplan {task}"
+      },
+      "child_lock": {
+        "name": "Kindersicherung"
       }
     },
     "number": {
@@ -208,6 +238,11 @@
     "image": {
       "map": {
         "name": "Karte"
+      }
+    },
+    "text": {
+      "room_name": {
+        "name": "Name von Raum {room}"
       }
     }
   },

@@ -50,6 +50,11 @@ MAP = f"map 0 {_BOX} {_PAYLOAD}"
 # Same box split into rooms 1 and 2
 _RBOX, _RPAYLOAD = _grid(10, 20, [[99, 99, 99, 99], [99, 1, 2, 99], [99, 99, 99, 99]])
 ROOMS = f"map_zone 0 0 {_RBOX} 2 1 11 21 11 21 2 12 21 12 21 {_RPAYLOAD}"
+HISTORY = {
+    "total": {"worktime": "600", "count": "12", "area": "250"},
+    "list": [{"tid": "1", "start_stamp": "2026-10-15 10:00:00", "worktime": 30, "area": 20}],
+}
+FIRMWARE = {"firmware": {"currVersion": "1.0.26", "status": "0"}, "module": {"currVersion": "3.1.5", "status": "1"}}
 ROOM_NAMES = '{"1": "Kitchen", "2": "Hall"}'
 
 
@@ -92,6 +97,17 @@ def mock_api():
             "custom_components.powerbot_s.api.PowerBotApiClient.async_get_rooms",
             AsyncMock(return_value=(ROOMS, ROOM_NAMES)),
         ) as rooms,
+        patch(
+            "custom_components.powerbot_s.api.PowerBotApiClient.async_rename_room", AsyncMock()
+        ) as rename_room,
+        patch(
+            "custom_components.powerbot_s.api.PowerBotApiClient.async_get_history",
+            AsyncMock(return_value=HISTORY),
+        ) as history,
+        patch(
+            "custom_components.powerbot_s.api.PowerBotApiClient.async_get_firmware",
+            AsyncMock(return_value=FIRMWARE),
+        ) as firmware,
     ):
         yield {
             "login": login,
@@ -102,6 +118,9 @@ def mock_api():
             "parts": parts,
             "map": robot_map,
             "rooms": rooms,
+            "rename_room": rename_room,
+            "history": history,
+            "firmware": firmware,
         }
 
 

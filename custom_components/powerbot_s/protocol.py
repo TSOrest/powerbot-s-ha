@@ -26,6 +26,7 @@ _CARPET = 0x0C
 _DND = 0x06
 _VOLUME = 0x0A
 _VOICE = 0x0B
+_CHILD_LOCK = 0x32
 
 _LOCATE = bytes([0x35, 0x07, 0, 0, 0, 0, 0])
 _QUERY_WORK_STATE = bytes([0x32, 0x01])
@@ -117,6 +118,11 @@ def do_not_disturb(enabled: bool, start: tuple[int, int], end: tuple[int, int]) 
     return build_frame(bytes([_CONTROL, _DND, int(enabled), *start, *end]))
 
 
+def child_lock(enabled: bool) -> str:
+    """Lock or unlock the robot's buttons."""
+    return build_frame(bytes([_CONTROL, _CHILD_LOCK, int(enabled)]))
+
+
 def select_voice(index: int) -> str:
     """Switch to a voice pack; the robot downloads it itself."""
     return build_frame(bytes([_CONTROL, _VOICE, index]))
@@ -154,6 +160,7 @@ class WorkState:
     work_time: int = 0  # minutes
     fault_class: int = 0
     fault_code: int = 0
+    child_lock: bool | None = None  # only in replies longer than 47 bytes
 
 
 @dataclass(frozen=True)
@@ -211,6 +218,7 @@ def parse_work_state(hex_frame: str | None) -> WorkState | None:
         work_time=frame[23] + 255 * (frame[33] >> 4 if len(frame) > 33 else 0),
         fault_class=frame[25],
         fault_code=frame[26],
+        child_lock=frame[46] == 1 if len(frame) > 47 else None,
     )
 
 
@@ -260,3 +268,4 @@ def parse_schedules(hex_frame: str | None) -> list[Schedule] | None:
             )
         )
     return schedules
+
