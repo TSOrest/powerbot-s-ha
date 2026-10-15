@@ -51,11 +51,6 @@ MAP = f"map 0 {_BOX} {_PAYLOAD}"
 _RBOX, _RPAYLOAD = _grid(10, 20, [[99, 99, 99, 99], [99, 1, 2, 99], [99, 99, 99, 99]])
 ROOMS = f"map_zone 0 0 {_RBOX} 2 1 11 21 11 21 2 12 21 12 21 {_RPAYLOAD}"
 ROOM_NAMES = '{"1": "Kitchen", "2": "Hall"}'
-OVERLAYS = {"virtual": "line 10 20 13 20 ;;", "forbidden": "forbid_zone 11 21 12 21 ;;", "mop/forbidden": ""}
-
-
-async def _overlay(device_id: str, user_id: str, kind: str) -> str:
-    return OVERLAYS[kind]
 
 
 @pytest.fixture(autouse=True)
@@ -100,10 +95,6 @@ def mock_api():
         patch(
             "custom_components.powerbot_s.api.PowerBotApiClient.async_rename_room", AsyncMock()
         ) as rename_room,
-        patch(
-            "custom_components.powerbot_s.api.PowerBotApiClient.async_get_overlay",
-            AsyncMock(side_effect=_overlay),
-        ),
     ):
         yield {
             "login": login,

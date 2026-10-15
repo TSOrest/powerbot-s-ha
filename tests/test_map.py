@@ -50,21 +50,6 @@ def test_render_png() -> None:
     assert int.from_bytes(png[20:24], "big") == 3
 
 
-def test_overlays() -> None:
-    assert robot_map.parse_boxes("line 1 2 3 4 5 6 7 8 ;;") == ((1, 2, 3, 4), (5, 6, 7, 8))
-    assert robot_map.parse_boxes('"forbid_zone 1 2 3 4 0"') == ((1, 2, 3, 4),)
-    assert robot_map.parse_boxes("") == ()
-    assert robot_map.parse_boxes(None) == ()
-    grid = robot_map.decode_map(MAP)
-    plain = robot_map.render_png(grid, scale=1)
-    marked = robot_map.render_png(
-        grid,
-        overlays=robot_map.Overlays(walls=((10, 20, 13, 20),), no_go=((11, 21, 12, 21), (0, 0, 99999, 99999))),
-        scale=1,
-    )
-    assert marked != plain and marked.startswith(b"\x89PNG")
-
-
 def test_clean_rooms_frame() -> None:
     frame = bytes.fromhex(protocol.clean_rooms(2, 2, [(1, 1), (3, 2)]))
     body = frame[10:-1]
@@ -80,7 +65,6 @@ async def test_map_image_and_rooms(hass: HomeAssistant, hass_client, mock_api) -
 
     image = hass.states.get("image.kitchen_map")
     assert image.attributes["rooms"] == {1: "Kitchen", 2: "Hall"}
-    assert (image.attributes["virtual_walls"], image.attributes["no_go_zones"]) == (1, 1)
     client = await hass_client()
     resp = await client.get(image.attributes["entity_picture"])
     assert resp.status == 200

@@ -46,14 +46,8 @@ class PowerBotMap(PowerBotEntity, ImageEntity):
         return self.coordinator.map_updated
 
     @property
-    def extra_state_attributes(self) -> dict[str, object]:
-        overlays = self.coordinator.overlays
-        return {
-            "rooms": self.coordinator.rooms,
-            "virtual_walls": len(overlays.walls),
-            "no_go_zones": len(overlays.no_go),
-            "no_mop_zones": len(overlays.no_mop),
-        }
+    def extra_state_attributes(self) -> dict[str, dict[int, str]]:
+        return {"rooms": self.coordinator.rooms}
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -67,8 +61,6 @@ class PowerBotMap(PowerBotEntity, ImageEntity):
         if self._png is None or self._drawn != coordinator.map_updated:
             grid = coordinator.room_grid or coordinator.map_grid
             room_map = coordinator.room_grid is not None
-            self._png = await self.hass.async_add_executor_job(
-                render_png, grid, room_map, coordinator.overlays
-            )
+            self._png = await self.hass.async_add_executor_job(render_png, grid, room_map)
             self._drawn = coordinator.map_updated
         return self._png
