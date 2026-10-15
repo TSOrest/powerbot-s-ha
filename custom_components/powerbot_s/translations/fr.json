@@ -179,6 +179,17 @@
       },
       "voice": {
         "name": "Voix"
+      },
+      "suction": {
+        "name": "Puissance d'aspiration",
+        "state": {
+          "off": "Arrêt",
+          "quiet": "Silencieux",
+          "low": "Faible",
+          "normal": "Normal",
+          "turbo": "Turbo",
+          "max": "Max"
+        }
       }
     },
     "switch": {

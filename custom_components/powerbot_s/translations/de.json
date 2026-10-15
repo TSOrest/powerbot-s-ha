@@ -179,6 +179,17 @@
       },
       "voice": {
         "name": "Sprache"
+      },
+      "suction": {
+        "name": "Saugleistung",
+        "state": {
+          "off": "Aus",
+          "quiet": "Leise",
+          "low": "Niedrig",
+          "normal": "Normal",
+          "turbo": "Turbo",
+          "max": "Max"
+        }
       }
     },
     "switch": {

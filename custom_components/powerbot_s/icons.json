@@ -63,6 +63,9 @@
       },
       "voice": {
         "default": "mdi:account-voice"
+      },
+      "suction": {
+        "default": "mdi:fan"
       }
     },
     "switch": {

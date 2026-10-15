@@ -28,6 +28,7 @@ Custom Home Assistant integration for the **Samsung VR7700 (POWERbot-S)** robot 
 | Cleaning | `binary_sensor` | `on` while cleaning |
 | Docked | `binary_sensor` | `on` while in the charging dock |
 | Connectivity | `binary_sensor` | `on` when the cloud is reachable (diagnostic) |
+| Suction power | `select` | Same as the vacuum's fan speed, for dashboards (off / quiet / low / normal / turbo / max) |
 | Water level | `select` | Mop water level (off / low / normal / high) |
 | Carpet mode | `switch` | Raise suction on carpets |
 | Do not disturb | `switch` | Keep the robot quiet between the start and end times |
@@ -123,9 +124,21 @@ sections:
       - type: tile
         entity: sensor.powerbot_error
       - type: tile
+        entity: select.powerbot_suction_power
+        features:
+          - type: select-options
+        grid_options:
+          columns: full
+      - type: tile
         entity: select.powerbot_water_level
+        features:
+          - type: select-options
+        grid_options:
+          columns: full
       - type: tile
         entity: switch.powerbot_carpet_mode
+        features:
+          - type: toggle
   - type: grid
     cards:
       - type: heading
@@ -205,6 +218,7 @@ logger:
 | Прибирання | `binary_sensor` | `on` під час прибирання |
 | На базі | `binary_sensor` | `on`, коли робот на зарядній станції |
 | Підключення | `binary_sensor` | `on`, коли хмара доступна (діагностика) |
+| Потужність всмоктування | `select` | Те саме, що потужність на пилососі, для панелей (вимк. / тихо / низька / нормальна / турбо / максимум) |
 | Рівень води | `select` | Подача води для вологого прибирання (вимк. / низький / нормальний / високий) |
 | Режим килима | `switch` | Підвищує всмоктування на килимах |
 | Не турбувати | `switch` | Робот мовчить між часом початку і кінця |
@@ -289,9 +303,21 @@ sections:
       - type: tile
         entity: sensor.powerbot_error
       - type: tile
+        entity: select.powerbot_suction_power
+        features:
+          - type: select-options
+        grid_options:
+          columns: full
+      - type: tile
         entity: select.powerbot_water_level
+        features:
+          - type: select-options
+        grid_options:
+          columns: full
       - type: tile
         entity: switch.powerbot_carpet_mode
+        features:
+          - type: toggle
   - type: grid
     cards:
       - type: heading

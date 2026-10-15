@@ -179,6 +179,17 @@
       },
       "voice": {
         "name": "Głos"
+      },
+      "suction": {
+        "name": "Moc ssania",
+        "state": {
+          "off": "Wyłączone",
+          "quiet": "Cicho",
+          "low": "Niska",
+          "normal": "Normalna",
+          "turbo": "Turbo",
+          "max": "Maks"
+        }
       }
     },
     "switch": {

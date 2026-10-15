@@ -41,10 +41,9 @@ async def async_setup_entry(
 
 
 class PowerBotCarpetMode(PowerBotEntity, SwitchEntity):
-    """Carpet detection: raise suction on carpets."""
+    """Carpet detection: raise suction on carpets; can be changed during a clean."""
 
     _attr_translation_key = "carpet_mode"
-    _attr_entity_category = EntityCategory.CONFIG
 
     def __init__(self, coordinator: PowerBotDataUpdateCoordinator) -> None:
         super().__init__(coordinator, "carpet_mode")

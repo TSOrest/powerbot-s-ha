@@ -179,6 +179,17 @@
       },
       "voice": {
         "name": "Hlas"
+      },
+      "suction": {
+        "name": "Sací výkon",
+        "state": {
+          "off": "Vypnuto",
+          "quiet": "Tichý",
+          "low": "Nízký",
+          "normal": "Normální",
+          "turbo": "Turbo",
+          "max": "Max"
+        }
       }
     },
     "switch": {

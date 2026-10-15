@@ -276,3 +276,16 @@ async def test_move_and_clean_modes(hass: HomeAssistant, mock_api) -> None:
         await hass.services.async_call(
             "vacuum", "send_command", {"entity_id": "vacuum.kitchen", "command": "dance"}, blocking=True
         )
+
+
+async def test_suction_select(hass: HomeAssistant, mock_api) -> None:
+    entry = _entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    suction = hass.states.get("select.kitchen_suction_power")
+    assert suction.state == "turbo"
+    await hass.services.async_call(
+        "select", "select_option", {"entity_id": "select.kitchen_suction_power", "option": "max"}, blocking=True
+    )
+    # Suction and water go together; water keeps its current level (normal)
+    mock_api["send"].assert_any_await("111", protocol.set_suction(5, 2), wait_timeout=15)

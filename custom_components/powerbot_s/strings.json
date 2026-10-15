@@ -179,6 +179,17 @@
       },
       "voice": {
         "name": "Voice"
+      },
+      "suction": {
+        "name": "Suction power",
+        "state": {
+          "off": "Off",
+          "quiet": "Quiet",
+          "low": "Low",
+          "normal": "Normal",
+          "turbo": "Turbo",
+          "max": "Max"
+        }
       }
     },
     "switch": {
