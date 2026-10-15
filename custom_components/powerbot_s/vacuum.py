@@ -12,7 +12,7 @@ from homeassistant.components.vacuum import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntityh
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, CONF_DEVICE_ID, FAN_LEVEL_MAP, FAN_SPEEDS
 from .coordinator import PowerBotDataUpdateCoordinator
