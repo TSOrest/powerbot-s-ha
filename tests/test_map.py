@@ -1,4 +1,7 @@
 """Map decoding, drawing and room cleaning tests."""
+import base64
+import zlib
+
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
 import pytest
@@ -16,6 +19,13 @@ def test_decode_map() -> None:
     assert robot_map.decode_map("map 0 1 2") is None
     assert robot_map.decode_map("map 0 0 0 3 3 notbase64!") is None
     assert robot_map.decode_map(None) is None
+
+
+def test_decode_map_stops_at_grid_size() -> None:
+    """A payload that inflates far past the grid is cut, not fully unpacked."""
+    payload = base64.b64encode(zlib.compress(bytes(50_000_000))).decode()
+    grid = robot_map.decode_map(f"map 0 0 0 3 2 {payload}")
+    assert grid is not None and len(grid.pixels) == 12
 
 
 def test_decode_rooms() -> None:

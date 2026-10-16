@@ -292,7 +292,7 @@ async def test_suction_select(hass: HomeAssistant, mock_api) -> None:
 
 
 async def test_child_lock_history_and_firmware(hass: HomeAssistant, mock_api) -> None:
-    from homeassistant.helpers import device_registry as dr
+    from homeassistant.helpers import device_registry as dr, entity_registry as er
 
     await hass.config.async_set_time_zone("UTC")
     entry = _entry(hass)
@@ -319,8 +319,14 @@ async def test_child_lock_history_and_firmware(hass: HomeAssistant, mock_api) ->
     assert module.attributes["installed_version"] == "3.1.5"
     assert module.attributes["latest_version"] == "new"
     assert hass.states.get("sensor.kitchen_since_sensor_cleaning").state == "68.5"
-    assert hass.states.get("sensor.kitchen_wi_fi_network").state == "Home"
-    assert hass.states.get("sensor.kitchen_ip_address").state == "192.168.1.50"
+    # SSID and IP are personal network details, so they start disabled
+    registry = er.async_get(hass)
+    for entity_id in ("sensor.kitchen_wi_fi_network", "sensor.kitchen_ip_address"):
+        assert hass.states.get(entity_id) is None
+        assert registry.async_get(entity_id).disabled_by is er.RegistryEntryDisabler.INTEGRATION
+    assert hass.config_entries.async_entries("powerbot_s")[0].runtime_data.wifi == protocol.WifiInfo(
+        "192.168.1.50", "Home", -55
+    )
     assert hass.states.get("sensor.kitchen_signal_strength").state == "-55"
     assert hass.states.get("binary_sensor.kitchen_automatic_firmware_updates").state == "on"
     device = dr.async_get(hass).async_get_device(identifiers={("powerbot_s", "111")})
