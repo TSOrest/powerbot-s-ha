@@ -58,7 +58,8 @@ def _inflate(payload: str, width: int, height: int) -> bytes | None:
     payload = payload.replace("-", "+").replace("_", "/")
     payload += "=" * (-len(payload) % 4)
     try:
-        data = zlib.decompress(base64.b64decode(payload))
+        # Never inflate more than the grid needs, whatever the payload says
+        data = zlib.decompressobj().decompress(base64.b64decode(payload), width * height)
     except (binascii.Error, ValueError, zlib.error):
         return None
     if len(data) < width * height:

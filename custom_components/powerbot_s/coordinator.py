@@ -201,9 +201,7 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         auto_update = protocol.parse_auto_update(await self._async_query(protocol.query_auto_update()))
         if auto_update is not None:
             self.auto_update = auto_update
-        reply = await self._async_query(protocol.query_wifi())
-        _LOGGER.debug("Wi-Fi reply: %s", reply)
-        if wifi := protocol.parse_wifi(reply):
+        if wifi := protocol.parse_wifi(await self._async_query(protocol.query_wifi())):
             self.wifi = wifi
         if dnd := protocol.parse_dnd(await self._async_query(protocol.query_dnd())):
             self.dnd_enabled, self.dnd_start, self.dnd_end = dnd.enabled, dnd.start, dnd.end
@@ -246,7 +244,8 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _async_read_history(self) -> None:
         """Read cleaning totals and the start of the last clean from the cloud."""
-        assert self._owner_id
+        if not self._owner_id:
+            return
         month = dt_util.now().strftime("%Y-%m-01")
         try:
             history = await self.client.async_get_history(self.device_id, self._owner_id, month)
@@ -266,7 +265,8 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _async_read_map(self) -> None:
         """Read the map and rooms the app shows; keep the last good copy."""
-        assert self._owner_id
+        if not self._owner_id:
+            return
         try:
             map_text = await self.client.async_get_map(self.device_id, self._owner_id)
             room_text, names = await self.client.async_get_rooms(self.device_id, self._owner_id)
@@ -275,8 +275,11 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         except PowerBotApiError as err:
             _LOGGER.debug("Could not read the map: %s", err)
             return
-        map_grid = robot_map.decode_map(map_text)
-        room_grid, room_ids = robot_map.decode_rooms(room_text)
+        # Decompressing a large map takes a while; keep it off the event loop
+        map_grid = await self.hass.async_add_executor_job(robot_map.decode_map, map_text)
+        room_grid, room_ids = await self.hass.async_add_executor_job(
+            robot_map.decode_rooms, room_text
+        )
         if (map_grid, room_grid) != (self.map_grid, self.room_grid) and (map_grid or room_grid):
             self.map_grid, self.room_grid = map_grid, room_grid
             self.map_updated = dt_util.utcnow()
