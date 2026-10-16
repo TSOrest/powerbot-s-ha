@@ -11,7 +11,13 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import PERCENTAGE, EntityCategory, UnitOfArea, UnitOfTime
+from homeassistant.const import (
+    PERCENTAGE,
+    SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+    EntityCategory,
+    UnitOfArea,
+    UnitOfTime,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -29,7 +35,6 @@ class PowerBotSensorDescription(SensorEntityDescription):
     value_fn: Callable[[PowerBotDataUpdateCoordinator], Any]
     # Needs data only a supported model provides (robot queries, consumables)
     robot: bool = False
-    attrs_fn: Callable[[PowerBotDataUpdateCoordinator], dict[str, Any]] | None = None
 
 
 def _connection(coordinator: PowerBotDataUpdateCoordinator) -> str:
@@ -138,15 +143,36 @@ SENSORS: tuple[PowerBotSensorDescription, ...] = (
         value_fn=lambda c: c.last_clean,
     ),
     PowerBotSensorDescription(
-        key="firmware",
-        translation_key="firmware",
+        key="sensor_cleaning",
+        translation_key="sensor_cleaning",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        state_class=SensorStateClass.MEASUREMENT,
+        robot=True,
+        value_fn=lambda c: c.sensor_hours,
+    ),
+    PowerBotSensorDescription(
+        key="wifi_ssid",
+        translation_key="wifi_ssid",
         entity_category=EntityCategory.DIAGNOSTIC,
         robot=True,
-        value_fn=lambda c: c.firmware,
-        attrs_fn=lambda c: {
-            "wifi_module": c.module_version,
-            "update_available": c.firmware_update,
-        },
+        value_fn=lambda c: c.wifi.ssid if c.wifi else None,
+    ),
+    PowerBotSensorDescription(
+        key="ip_address",
+        translation_key="ip_address",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        robot=True,
+        value_fn=lambda c: c.wifi.ip if c.wifi else None,
+    ),
+    PowerBotSensorDescription(
+        key="wifi_signal",
+        device_class=SensorDeviceClass.SIGNAL_STRENGTH,
+        native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        robot=True,
+        value_fn=lambda c: c.wifi.rssi if c.wifi else None,
     ),
     *(
         PowerBotSensorDescription(
@@ -197,9 +223,3 @@ class PowerBotSensor(PowerBotEntity, SensorEntity):
     @property
     def native_value(self) -> Any:
         return self.entity_description.value_fn(self.coordinator)
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any] | None:
-        if self.entity_description.attrs_fn is None:
-            return None
-        return self.entity_description.attrs_fn(self.coordinator)

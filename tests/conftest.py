@@ -17,6 +17,9 @@ REPLIES = {
     protocol.query_dnd(): "aa11b80000000000000332050116000800de",
     protocol.query_voice(): "aa0cb800000000000103368082",
     # One schedule: every day 10:00, 30 min, whole house, normal/normal, task 1, off
+    # Not recorded yet: built from the app's layout
+    protocol.query_wifi(): protocol.build_frame(b"\x35\x16" + bytes([192, 168, 1, 50, 55, 4]) + b"Home", msg_type=3),
+    protocol.query_auto_update(): protocol.build_frame(b"\x35\x15\x01", msg_type=3),
     protocol.query_schedules(): "aa2ab800000000000003340100ff0a001e08020201010000000000000000000000000000000000000000b1",
 }
 VOICES = [
@@ -30,7 +33,7 @@ DEVICE = {
     "product": {"sn8": "610VR510", "productModel": "VR7700", "protoVersion": 0},
     "panel": {"name": "T0xB8_610VR510", "versionName": "2.2.46"},
 }
-PARTS = {"filter_net_time": "4112", "side_brush_time": "4112", "roll_brush_time": "4112"}
+PARTS = {"filter_net_time": "4112", "side_brush_time": "4112", "roll_brush_time": "4112", "sensor_time": "4112"}
 
 
 async def _send(device_id, frame, wait_timeout=None):

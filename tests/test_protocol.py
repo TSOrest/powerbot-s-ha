@@ -104,3 +104,17 @@ def test_parse_schedules() -> None:
     # No schedules: just the header
     assert protocol.parse_schedules("aa0db80000000000000334010003") == []
     assert protocol.parse_schedules(None) is None
+
+
+def test_wifi_and_auto_update() -> None:
+    assert protocol.query_wifi() == "AA11B80000000000000335160000000000E9"
+    assert protocol.query_auto_update() == "AA11B80000000000000335150000000000EA"
+    # The app's layout (data from byte 11) and the one shifted past the 35 16 echo
+    for head in (b"\x35", b"\x35\x16"):
+        reply = protocol.build_frame(head + bytes([192, 168, 1, 50, 55, 4]) + b"Home", msg_type=3)
+        assert protocol.parse_wifi(reply) == protocol.WifiInfo("192.168.1.50", "Home", -55)
+    assert protocol.parse_wifi(protocol.build_frame(b"\x35\x16" + bytes(10), msg_type=3)) is None
+    assert protocol.parse_wifi(None) is None
+    assert protocol.parse_auto_update(protocol.build_frame(b"\x35\x15\x01", msg_type=3)) is True
+    assert protocol.parse_auto_update(protocol.build_frame(b"\x35\x15\x00", msg_type=3)) is False
+    assert protocol.parse_auto_update(protocol.build_frame(b"\x35\x15\x07", msg_type=3)) is None

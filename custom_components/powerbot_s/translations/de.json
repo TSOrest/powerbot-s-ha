@@ -171,8 +171,14 @@
       "last_clean": {
         "name": "Letzte Reinigung"
       },
-      "firmware": {
-        "name": "Firmware"
+      "sensor_cleaning": {
+        "name": "Seit Sensorreinigung"
+      },
+      "wifi_ssid": {
+        "name": "WLAN-Netzwerk"
+      },
+      "ip_address": {
+        "name": "IP-Adresse"
       }
     },
     "binary_sensor": {
@@ -181,6 +187,9 @@
       },
       "docked": {
         "name": "Angedockt"
+      },
+      "auto_update": {
+        "name": "Automatische Firmware-Updates"
       }
     },
     "select": {
@@ -243,6 +252,14 @@
     "text": {
       "room_name": {
         "name": "Name von Raum {room}"
+      }
+    },
+    "update": {
+      "firmware": {
+        "name": "Firmware"
+      },
+      "wifi_module_firmware": {
+        "name": "WLAN-Modul-Firmware"
       }
     }
   },

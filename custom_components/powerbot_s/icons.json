@@ -57,8 +57,14 @@
       "last_clean": {
         "default": "mdi:calendar-check"
       },
-      "firmware": {
-        "default": "mdi:chip"
+      "sensor_cleaning": {
+        "default": "mdi:eye-refresh-outline"
+      },
+      "wifi_ssid": {
+        "default": "mdi:wifi"
+      },
+      "ip_address": {
+        "default": "mdi:ip-network"
       }
     },
     "binary_sensor": {
@@ -67,6 +73,9 @@
       },
       "docked": {
         "default": "mdi:home-battery"
+      },
+      "auto_update": {
+        "default": "mdi:update"
       }
     },
     "select": {

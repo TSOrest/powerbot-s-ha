@@ -171,8 +171,14 @@
       "last_clean": {
         "name": "Poslední úklid"
       },
-      "firmware": {
-        "name": "Firmware"
+      "sensor_cleaning": {
+        "name": "Od čištění senzorů"
+      },
+      "wifi_ssid": {
+        "name": "Síť Wi-Fi"
+      },
+      "ip_address": {
+        "name": "IP adresa"
       }
     },
     "binary_sensor": {
@@ -181,6 +187,9 @@
       },
       "docked": {
         "name": "V základně"
+      },
+      "auto_update": {
+        "name": "Automatické aktualizace firmwaru"
       }
     },
     "select": {
@@ -243,6 +252,14 @@
     "text": {
       "room_name": {
         "name": "Název místnosti {room}"
+      }
+    },
+    "update": {
+      "firmware": {
+        "name": "Firmware"
+      },
+      "wifi_module_firmware": {
+        "name": "Firmware modulu Wi-Fi"
       }
     }
   },

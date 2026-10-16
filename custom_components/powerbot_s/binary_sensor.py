@@ -24,7 +24,7 @@ PARALLEL_UPDATES = 0
 class PowerBotBinarySensorDescription(BinarySensorEntityDescription):
     """Describes a POWERbot-S binary sensor."""
 
-    is_on_fn: Callable[[str, PowerBotDataUpdateCoordinator], bool]
+    is_on_fn: Callable[[str, PowerBotDataUpdateCoordinator], bool | None]
     always_available: bool = False
 
 
@@ -56,6 +56,12 @@ BINARY_SENSORS: tuple[PowerBotBinarySensorDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         is_on_fn=lambda _, coordinator: coordinator.last_update_success,
         always_available=True,
+    ),
+    PowerBotBinarySensorDescription(
+        key="auto_update",
+        translation_key="auto_update",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        is_on_fn=lambda _, coordinator: coordinator.auto_update,
     ),
 )
 
@@ -90,5 +96,5 @@ class PowerBotBinarySensor(PowerBotEntity, BinarySensorEntity):
         return self.entity_description.always_available or super().available
 
     @property
-    def is_on(self) -> bool:
+    def is_on(self) -> bool | None:
         return self.entity_description.is_on_fn(self.state_str, self.coordinator)
