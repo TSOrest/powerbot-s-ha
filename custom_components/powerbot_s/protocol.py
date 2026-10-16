@@ -33,6 +33,8 @@ _QUERY_WORK_STATE = bytes([0x32, 0x01])
 _QUERY_DND = bytes([0x32, 0x05])
 _QUERY_VOICE = bytes([0x36])
 _QUERY_SCHEDULES = bytes([0x34, 0x01])
+_QUERY_AUTO_UPDATE = bytes([0x35, 0x15, 0, 0, 0, 0, 0])
+_QUERY_WIFI = bytes([0x35, 0x16, 0, 0, 0, 0, 0])
 
 _SCHEDULE = 0x24
 _SCHEDULE_ON = 0x06
@@ -146,6 +148,14 @@ def query_schedules() -> str:
     return build_frame(_QUERY_SCHEDULES, msg_type=_MSG_QUERY)
 
 
+def query_auto_update() -> str:
+    return build_frame(_QUERY_AUTO_UPDATE, msg_type=_MSG_QUERY)
+
+
+def query_wifi() -> str:
+    return build_frame(_QUERY_WIFI, msg_type=_MSG_QUERY)
+
+
 @dataclass(frozen=True)
 class WorkState:
     """Settings read from the work-state reply (type 0x03, body 32 01)."""
@@ -176,6 +186,15 @@ class Schedule:
     fan: int
     water: int
     enabled: bool
+
+
+@dataclass(frozen=True)
+class WifiInfo:
+    """The robot's Wi-Fi connection (reply to 35 16)."""
+
+    ip: str
+    ssid: str
+    rssi: int  # dBm
 
 
 @dataclass(frozen=True)
@@ -237,6 +256,33 @@ def parse_voice(hex_frame: str | None) -> int | None:
     if (frame := _reply(hex_frame, _QUERY_VOICE, 12)) is None:
         return None
     return frame[11]
+
+
+def parse_auto_update(hex_frame: str | None) -> bool | None:
+    """Whether the robot installs firmware updates by itself (byte 12: 0 off, 1 on)."""
+    if (frame := _reply(hex_frame, _QUERY_AUTO_UPDATE[:2], 13)) is None or frame[12] > 1:
+        return None
+    return frame[12] == 1
+
+
+def parse_wifi(hex_frame: str | None) -> WifiInfo | None:
+    """Read the IP (4 bytes), signal (minus dBm), SSID length and SSID.
+
+    The app reads them from byte 11, which would overlap the 35 16 echo; until a
+    live reply confirms it, take the data from byte 12 when the echo is there.
+    """
+    if (frame := _reply(hex_frame, _QUERY_WIFI[:1], 18)) is None:
+        return None
+    at = 12 if frame[11] == _QUERY_WIFI[1] else 11
+    length = frame[at + 5] if len(frame) > at + 5 else 0
+    ssid = frame[at + 6 : at + 6 + length]
+    if not length or len(ssid) != length:
+        return None
+    return WifiInfo(
+        ip=".".join(str(b) for b in frame[at : at + 4]),
+        ssid=ssid.decode("utf-8", "replace"),
+        rssi=-frame[at + 4],
+    )
 
 
 def parse_schedules(hex_frame: str | None) -> list[Schedule] | None:

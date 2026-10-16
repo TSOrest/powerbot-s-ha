@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from datetime import datetime, time
 from typing import Any
 
@@ -101,10 +101,12 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         # Cleaning totals (minutes, count, m2) and when the last clean started
         self.totals: dict[str, float] = {}
         self.last_clean: datetime | None = None
-        # Firmware version and whether the cloud offers an update
-        self.firmware: str | None = None
-        self.firmware_update: bool | None = None
-        self.module_version: str | None = None
+        # Robot firmware and Wi-Fi module: part -> installed version, update flag, notes
+        self.firmware: dict[str, FirmwareInfo] = {}
+        self.auto_update: bool | None = None
+        self.wifi: protocol.WifiInfo | None = None
+        # Hours since the cliff sensors were last cleaned (the cloud counts minutes)
+        self.sensor_hours: float | None = None
         # Cleaning schedules stored on the robot: task id -> schedule
         self.schedules: dict[int, protocol.Schedule] = {}
 
@@ -196,6 +198,13 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 self.child_lock = work.child_lock
         if not slow:
             return
+        auto_update = protocol.parse_auto_update(await self._async_query(protocol.query_auto_update()))
+        if auto_update is not None:
+            self.auto_update = auto_update
+        reply = await self._async_query(protocol.query_wifi())
+        _LOGGER.debug("Wi-Fi reply: %s", reply)
+        if wifi := protocol.parse_wifi(reply):
+            self.wifi = wifi
         if dnd := protocol.parse_dnd(await self._async_query(protocol.query_dnd())):
             self.dnd_enabled, self.dnd_start, self.dnd_end = dnd.enabled, dnd.start, dnd.end
         if (voice := protocol.parse_voice(await self._async_query(protocol.query_voice()))) is not None:
@@ -210,7 +219,10 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 _LOGGER.debug("Could not read consumables: %s", err)
             else:
                 self.parts = _remaining(parts)
+                self.sensor_hours = _hours(parts.get("sensor_time"))
             await self._async_read_history()
+            if self._polls:  # setup already read it
+                await self._async_read_firmware()
             await self._async_read_map()
 
     async def _async_read_firmware(self) -> None:
@@ -223,12 +235,14 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         except PowerBotApiError as err:
             _LOGGER.debug("Could not read the firmware version: %s", err)
             return
-        firmware = ota.get("firmware") if isinstance(ota.get("firmware"), dict) else {}
-        module = ota.get("module") if isinstance(ota.get("module"), dict) else {}
-        self.firmware = firmware.get("currVersion") or None
-        self.module_version = module.get("currVersion") or None
-        if firmware or module:
-            self.firmware_update = "1" in (str(firmware.get("status")), str(module.get("status")))
+        for part in ("firmware", "module"):
+            if isinstance(info := ota.get(part), dict) and info.get("currVersion"):
+                self.firmware[part] = FirmwareInfo(
+                    installed=str(info["currVersion"]),
+                    update=str(info.get("status")) == "1",
+                    latest=str(info.get("newVersion") or "") or None,
+                    notes=str(info.get("desc") or "") or None,
+                )
 
     async def _async_read_history(self) -> None:
         """Read cleaning totals and the start of the last clean from the cloud."""
@@ -333,6 +347,23 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         except PowerBotApiError as err:
             raise HomeAssistantError(f"Command failed: {err}") from err
         await self.async_request_refresh()
+
+
+@dataclass(frozen=True)
+class FirmwareInfo:
+    """What the cloud says about one firmware part (robot or Wi-Fi module)."""
+
+    installed: str
+    update: bool
+    latest: str | None = None
+    notes: str | None = None
+
+
+def _hours(minutes: Any) -> float | None:
+    try:
+        return round(float(minutes) / 60, 1)
+    except (TypeError, ValueError):
+        return None
 
 
 def _remaining(parts: dict[str, Any]) -> dict[str, int]:

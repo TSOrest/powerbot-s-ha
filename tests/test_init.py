@@ -311,8 +311,17 @@ async def test_child_lock_history_and_firmware(hass: HomeAssistant, mock_api) ->
     assert hass.states.get("sensor.kitchen_total_cleaned_area").state == "250.0"
     assert hass.states.get("sensor.kitchen_total_cleanings").state == "12"
     assert hass.states.get("sensor.kitchen_last_clean").state == "2026-10-15T10:00:00+00:00"
-    firmware = hass.states.get("sensor.kitchen_firmware")
-    assert firmware.state == "1.0.26"
-    assert firmware.attributes == firmware.attributes | {"wifi_module": "3.1.5", "update_available": True}
+    firmware = hass.states.get("update.kitchen_firmware")
+    assert firmware.state == "off"
+    assert firmware.attributes["installed_version"] == "1.0.26"
+    module = hass.states.get("update.kitchen_wi_fi_module_firmware")
+    assert module.state == "on"
+    assert module.attributes["installed_version"] == "3.1.5"
+    assert module.attributes["latest_version"] == "new"
+    assert hass.states.get("sensor.kitchen_since_sensor_cleaning").state == "68.5"
+    assert hass.states.get("sensor.kitchen_wi_fi_network").state == "Home"
+    assert hass.states.get("sensor.kitchen_ip_address").state == "192.168.1.50"
+    assert hass.states.get("sensor.kitchen_signal_strength").state == "-55"
+    assert hass.states.get("binary_sensor.kitchen_automatic_firmware_updates").state == "on"
     device = dr.async_get(hass).async_get_device(identifiers={("powerbot_s", "111")})
     assert device.sw_version == "1.0.26"

@@ -171,8 +171,14 @@
       "last_clean": {
         "name": "Ostatnie sprzątanie"
       },
-      "firmware": {
-        "name": "Oprogramowanie"
+      "sensor_cleaning": {
+        "name": "Od czyszczenia czujników"
+      },
+      "wifi_ssid": {
+        "name": "Sieć Wi-Fi"
+      },
+      "ip_address": {
+        "name": "Adres IP"
       }
     },
     "binary_sensor": {
@@ -181,6 +187,9 @@
       },
       "docked": {
         "name": "W stacji"
+      },
+      "auto_update": {
+        "name": "Automatyczne aktualizacje oprogramowania"
       }
     },
     "select": {
@@ -243,6 +252,14 @@
     "text": {
       "room_name": {
         "name": "Nazwa pokoju {room}"
+      }
+    },
+    "update": {
+      "firmware": {
+        "name": "Oprogramowanie"
+      },
+      "wifi_module_firmware": {
+        "name": "Oprogramowanie modułu Wi-Fi"
       }
     }
   },

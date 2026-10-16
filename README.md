@@ -43,7 +43,10 @@ Custom Home Assistant integration for the **Samsung VR7700 (POWERbot-S)** robot 
 | Child lock | `switch` | Locks the robot's own buttons |
 | Total cleaning time / Total cleaned area / Total cleanings | `sensor` | Totals from the app's cleaning history |
 | Last clean | `sensor` | When the last clean started |
-| Firmware | `sensor` | Firmware version (diagnostic); attributes show the Wi-Fi module version and whether an update is available in the app |
+| Firmware, Wi-Fi module firmware | `update` | Installed version and whether the cloud offers an update (diagnostic). Install updates from the app |
+| Automatic firmware updates | `binary_sensor` | Whether the robot installs firmware updates by itself (diagnostic) |
+| Wi-Fi network, IP address, signal strength | `sensor` | The robot's Wi-Fi connection (diagnostic) |
+| Since sensor cleaning | `sensor` | Hours since the sensors were last cleaned |
 | Room N name | `text` | Renames a room; the app shows the same name, and `clean_rooms` accepts it |
 | Schedule N | `switch` | Turns a schedule made in the app on or off; attributes show days, start, duration, mode, suction and water |
 
@@ -238,7 +241,10 @@ logger:
 | Блокування від дітей | `switch` | Блокує кнопки на самому роботі |
 | Загальний час прибирання / Загальна прибрана площа / Кількість прибирань | `sensor` | Підсумки з історії прибирань у застосунку |
 | Останнє прибирання | `sensor` | Коли почалося останнє прибирання |
-| Прошивка | `sensor` | Версія прошивки (діагностика); атрибути показують версію Wi-Fi модуля і чи є оновлення в застосунку |
+| Прошивка, Прошивка Wi-Fi модуля | `update` | Встановлена версія і чи пропонує хмара оновлення (діагностика). Оновлення встановлюються із застосунку |
+| Автооновлення прошивки | `binary_sensor` | Чи оновлює робот прошивку сам (діагностика) |
+| Мережа Wi-Fi, IP-адреса, рівень сигналу | `sensor` | Підключення робота до Wi-Fi (діагностика) |
+| Після очищення датчиків | `sensor` | Скільки годин минуло з останнього очищення датчиків |
 | Назва кімнати N | `text` | Перейменовує кімнату; застосунок показує ту саму назву, і `clean_rooms` її приймає |
 | Розклад N | `switch` | Вмикає або вимикає розклад, створений у застосунку; атрибути показують дні, початок, тривалість, режим, всмоктування і воду |
 
