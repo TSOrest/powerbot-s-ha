@@ -1,6 +1,8 @@
 """Select platform for POWERbot-S: suction, mop water level and voice pack."""
 from __future__ import annotations
 
+from dataclasses import replace
+
 from homeassistant.components.select import SelectEntity
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
@@ -47,7 +49,7 @@ class PowerBotSuction(PowerBotEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         await self.coordinator.async_send(
-            protocol.set_suction(*self.coordinator.levels(fan=option))
+            protocol.set_suction(*await self.coordinator.async_levels(fan=option))
         )
 
 
@@ -66,9 +68,11 @@ class PowerBotWaterLevel(PowerBotEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         await self.coordinator.async_send(
-            protocol.set_suction(*self.coordinator.levels(water=option))
+            protocol.set_suction(*await self.coordinator.async_levels(water=option))
         )
         self.coordinator.last_water = option
+        if self.coordinator.work:
+            self.coordinator.work = replace(self.coordinator.work, water=WATER_LEVELS[option])
         self.async_write_ha_state()
 
 

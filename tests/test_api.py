@@ -1,9 +1,10 @@
 """Cloud client tests."""
+import aiohttp
 import pytest
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from custom_components.powerbot_s.api import PowerBotApiClient, PowerBotAuthError
+from custom_components.powerbot_s.api import PowerBotApiClient, PowerBotApiError, PowerBotAuthError
 from custom_components.powerbot_s.const import CLIENT_ID, REGION_HOSTS
 
 EU = REGION_HOSTS["eu"]
@@ -23,6 +24,26 @@ async def test_login_moves_to_account_region(hass: HomeAssistant, aioclient_mock
 
 async def test_wrong_password(hass: HomeAssistant, aioclient_mock) -> None:
     aioclient_mock.post(f"{EU}{LOGIN}", json={"errorCode": "0051004", "msg": "bad"})
+    client = PowerBotApiClient(async_get_clientsession(hass), "a@b.c", "pw")
+    with pytest.raises(PowerBotAuthError):
+        await client.async_login()
+
+
+async def test_unreachable_region_is_not_wrong_password(hass: HomeAssistant, aioclient_mock) -> None:
+    # The home region can't be reached and the others don't know the account
+    aioclient_mock.post(f"{EU}{LOGIN}", exc=aiohttp.ClientConnectionError())
+    for region, host in REGION_HOSTS.items():
+        if region != "eu":
+            aioclient_mock.post(f"{host}{LOGIN}", json={"errorCode": "0051204"})
+    client = PowerBotApiClient(async_get_clientsession(hass), "a@b.c", "pw")
+    with pytest.raises(PowerBotApiError) as err:
+        await client.async_login()
+    assert not isinstance(err.value, PowerBotAuthError)
+
+
+async def test_account_in_no_region(hass: HomeAssistant, aioclient_mock) -> None:
+    for host in REGION_HOSTS.values():
+        aioclient_mock.post(f"{host}{LOGIN}", json={"errorCode": "0051204"})
     client = PowerBotApiClient(async_get_clientsession(hass), "a@b.c", "pw")
     with pytest.raises(PowerBotAuthError):
         await client.async_login()

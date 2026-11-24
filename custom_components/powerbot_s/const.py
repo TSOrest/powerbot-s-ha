@@ -38,8 +38,10 @@ PARTS_HOSTS = {
 DEFAULT_SN8 = "610VR510"
 
 # Models whose control plugin (Midea M7, project m7MSLifeSamsung) the command
-# frames come from: VR7700 for Europe and North America, protocol version 0.
-SUPPORTED_SN8 = ("610VR510", "620VR520")
+# frames come from and that were tested on a real robot: VR7700 for Europe,
+# protocol version 0. The North America VR7700 (620VR520) uses the same plugin
+# but stays read-only until someone confirms control works on it.
+SUPPORTED_SN8 = ("610VR510",)
 SUPPORTED_PROTO_VERSIONS = (0,)
 
 # Work modes reported in the work-state reply (byte 16)
@@ -138,12 +140,10 @@ FAN_LEVELS: dict[str, int] = {
 }
 FAN_SPEEDS = list(FAN_LEVELS)
 FAN_LEVEL_MAP: dict[str, str] = {str(v): k for k, v in FAN_LEVELS.items()}
-DEFAULT_FAN = "turbo"
 
 # Mop water levels (shadow "waterLevel" and command bytes)
 WATER_LEVELS: dict[str, int] = {"off": 0, "low": 1, "normal": 2, "high": 3}
 WATER_LEVEL_MAP: dict[str, str] = {str(v): k for k, v in WATER_LEVELS.items()}
-DEFAULT_WATER = "normal"
 
 # Cloud "state" values (names from the POWERbot-S app), grouped by meaning
 STATE_CLEANING = "cleaning"

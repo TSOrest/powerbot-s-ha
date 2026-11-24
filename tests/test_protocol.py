@@ -79,7 +79,7 @@ def test_fault_key() -> None:
 def test_manual_and_mode_frames_match_app() -> None:
     assert protocol.manual(1) == "AA15B80000000000000222020001010000000000000B"
     assert protocol.manual(0) == "AA15B80000000000000222020001000000000000000C"
-    assert protocol.start(2, 2, mode=3) == "AA15B800000000000002220200020003020002000004"
+    assert protocol.start(2, 2) == "AA15B8000000000000022202000200080200020000FF"
 
 
 def test_schedule_frames_match_app() -> None:

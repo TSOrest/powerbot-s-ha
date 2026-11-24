@@ -166,6 +166,9 @@ class PowerBotApiClient:
     async def async_login(self) -> None:
         """Log in with email/password, finding the account's region."""
         regions = [self._region] + [r for r in REGION_HOSTS if r != self._region]
+        # A region that could not be reached may hold the account, so a network
+        # error must not turn into "wrong email or password"
+        network_error: PowerBotApiError | None = None
         for region in regions:
             url = f"{REGION_HOSTS[region]}/auth/login/email-password?clientId={CLIENT_ID}"
             try:
@@ -174,6 +177,7 @@ class PowerBotApiClient:
                 )
             except PowerBotApiError as err:
                 _LOGGER.debug("Login to region %s failed: %s", region, err)
+                network_error = err
                 continue
             if status == 401 or not isinstance(data, dict):
                 raise PowerBotAuthError("Login rejected")
@@ -193,6 +197,8 @@ class PowerBotApiClient:
                 raise PowerBotApiError("Login response did not contain a token")
             _LOGGER.debug("Logged in to mzrobo.com, region %s", region)
             return
+        if network_error is not None:
+            raise network_error
         raise PowerBotAuthError("Account not found in any region")
 
     async def _refresh_access_token(self) -> None:
