@@ -26,8 +26,6 @@ from .const import (
     DEFAULT_SN8,
     SUPPORTED_PROTO_VERSIONS,
     SUPPORTED_SN8,
-    DEFAULT_FAN,
-    DEFAULT_WATER,
     DOMAIN,
     FAN_LEVEL_MAP,
     FAN_LEVELS,
@@ -68,14 +66,15 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         self.client = client
         self.device_id: str = entry.data[CONF_DEVICE_ID]
-        # Last water level set from Home Assistant, used when the cloud state lacks it
-        self.last_water: str = DEFAULT_WATER
+        # Last water level set from Home Assistant, used when neither the cloud
+        # state nor the robot reports it
+        self.last_water: str | None = None
         # Settings read from the robot itself (None until the first answer)
         self.carpet_mode: bool | None = None
         self.volume: int | None = None
         self.dnd_enabled: bool | None = None
-        self.dnd_start = time(22, 0)
-        self.dnd_end = time(8, 0)
+        self.dnd_start: time | None = None
+        self.dnd_end: time | None = None
         self.voice: int | None = None
         # Voice packs for this model: voice index -> name
         self.voices: dict[int, str] = {}
@@ -189,13 +188,7 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _async_read_robot(self, slow: bool) -> None:
         """Read settings the cloud state does not carry from the robot."""
-        if work := protocol.parse_work_state(await self._async_query(protocol.query_work_state())):
-            self.volume = work.volume
-            self.carpet_mode = work.carpet
-            self.has_mop = work.has_mop
-            self.work = work
-            if work.child_lock is not None:
-                self.child_lock = work.child_lock
+        await self._async_read_work_state()
         if not slow:
             return
         auto_update = protocol.parse_auto_update(await self._async_query(protocol.query_auto_update()))
@@ -203,8 +196,7 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             self.auto_update = auto_update
         if wifi := protocol.parse_wifi(await self._async_query(protocol.query_wifi())):
             self.wifi = wifi
-        if dnd := protocol.parse_dnd(await self._async_query(protocol.query_dnd())):
-            self.dnd_enabled, self.dnd_start, self.dnd_end = dnd.enabled, dnd.start, dnd.end
+        await self._async_read_dnd()
         if (voice := protocol.parse_voice(await self._async_query(protocol.query_voice()))) is not None:
             self.voice = voice
         schedules = protocol.parse_schedules(await self._async_query(protocol.query_schedules()))
@@ -222,6 +214,19 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             if self._polls:  # setup already read it
                 await self._async_read_firmware()
             await self._async_read_map()
+
+    async def _async_read_work_state(self) -> None:
+        if work := protocol.parse_work_state(await self._async_query(protocol.query_work_state())):
+            self.volume = work.volume
+            self.carpet_mode = work.carpet
+            self.has_mop = work.has_mop
+            self.work = work
+            if work.child_lock is not None:
+                self.child_lock = work.child_lock
+
+    async def _async_read_dnd(self) -> None:
+        if dnd := protocol.parse_dnd(await self._async_query(protocol.query_dnd())):
+            self.dnd_enabled, self.dnd_start, self.dnd_end = dnd.enabled, dnd.start, dnd.end
 
     async def _async_read_firmware(self) -> None:
         if not self._owner_id:
@@ -288,19 +293,35 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     @property
     def fan_speed(self) -> str | None:
         level = self.data.get("fanLevel")
-        return FAN_LEVEL_MAP.get(str(level)) if level is not None else None
+        if level is not None and str(level) in FAN_LEVEL_MAP:
+            return FAN_LEVEL_MAP[str(level)]
+        return FAN_LEVEL_MAP.get(str(self.work.fan)) if self.work else None
 
     @property
-    def water_level(self) -> str:
+    def water_level(self) -> str | None:
         level = self.data.get("waterLevel")
         if level is not None and str(level) in WATER_LEVEL_MAP:
             return WATER_LEVEL_MAP[str(level)]
+        if self.work and str(self.work.water) in WATER_LEVEL_MAP:
+            return WATER_LEVEL_MAP[str(self.work.water)]
         return self.last_water
 
-    def levels(self, fan: str | None = None, water: str | None = None) -> tuple[int, int]:
-        """Return command bytes for fan and water, filling in current values."""
-        fan = fan or self.fan_speed or DEFAULT_FAN
+    async def async_levels(
+        self, fan: str | None = None, water: str | None = None
+    ) -> tuple[int, int]:
+        """Return command bytes for fan and water, filling in the robot's current values.
+
+        The robot takes both at once, so a value it has not reported is read
+        first; nothing is sent in its place.
+        """
+        if not (fan or self.fan_speed) or not (water or self.water_level):
+            await self._async_read_work_state()
+        fan = fan or self.fan_speed
         water = water or self.water_level
+        if fan is None or water is None:
+            raise HomeAssistantError(
+                "The robot's suction and water level have not been read yet; try again shortly"
+            )
         return FAN_LEVELS[fan], WATER_LEVELS[water]
 
     async def async_set_dnd(
@@ -309,10 +330,21 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         start: time | None = None,
         end: time | None = None,
     ) -> None:
-        """Send the do-not-disturb setting, keeping the parts not given."""
+        """Send the do-not-disturb setting, keeping the parts not given.
+
+        Parts not given are read from the robot first; nothing is sent in their place.
+        """
+        if (enabled is None and self.dnd_enabled is None) or not (start or self.dnd_start) or not (
+            end or self.dnd_end
+        ):
+            await self._async_read_dnd()
         enabled = self.dnd_enabled if enabled is None else enabled
         start = start or self.dnd_start
         end = end or self.dnd_end
+        if enabled is None or start is None or end is None:
+            raise HomeAssistantError(
+                "The do-not-disturb setting has not been read from the robot yet; try again shortly"
+            )
         await self.async_send(
             protocol.do_not_disturb(
                 bool(enabled), (start.hour, start.minute), (end.hour, end.minute)

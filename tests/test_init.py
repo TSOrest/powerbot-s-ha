@@ -1,6 +1,8 @@
 """Setup and entity tests."""
+import pytest
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.powerbot_s.api import PowerBotAuthError
@@ -36,7 +38,7 @@ async def test_setup_creates_entities(hass: HomeAssistant, mock_api) -> None:
 
     await hass.services.async_call("vacuum", "start", {"entity_id": "vacuum.kitchen"}, blocking=True)
     # Docked robot: a fresh auto clean with current suction (turbo) and default water (normal)
-    mock_api["send"].assert_any_await("111", protocol.start(3, 2), wait_timeout=15)
+    mock_api["send"].assert_any_await("111", protocol.start(3, 3), wait_timeout=15)
 
     assert await hass.config_entries.async_unload(entry.entry_id)
 
@@ -123,6 +125,27 @@ async def test_settings_read_from_robot(hass: HomeAssistant, mock_api) -> None:
     assert hass.states.get("sensor.kitchen_error_code") is None  # diagnostic, disabled by default
 
 
+async def test_settings_not_read_are_not_sent(hass: HomeAssistant, mock_api) -> None:
+    from custom_components.powerbot_s.api import PowerBotDeviceTimeoutError
+
+    mock_api["send"].side_effect = PowerBotDeviceTimeoutError("timeout")
+    entry = _entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    mock_api["send"].reset_mock()
+
+    # The water level and do-not-disturb times were never read: refuse, don't guess
+    with pytest.raises(HomeAssistantError):
+        await hass.services.async_call("vacuum", "start", {"entity_id": "vacuum.kitchen"}, blocking=True)
+    with pytest.raises(HomeAssistantError):
+        await hass.services.async_call(
+            "switch", "turn_on", {"entity_id": "switch.kitchen_do_not_disturb"}, blocking=True
+        )
+    # Only read attempts reached the robot
+    sent = {c.args[1] for c in mock_api["send"].await_args_list}
+    assert sent <= {protocol.query_work_state(), protocol.query_dnd()}
+
+
 async def test_robot_not_answering_queries_keeps_entities_unknown(hass: HomeAssistant, mock_api) -> None:
     from custom_components.powerbot_s.api import PowerBotDeviceTimeoutError
 
@@ -186,14 +209,20 @@ async def test_device_shows_model(hass: HomeAssistant, mock_api) -> None:
     assert device.model_id == "610VR510"
 
 
-async def test_other_model_is_read_only(hass: HomeAssistant, mock_api) -> None:
+@pytest.mark.parametrize(
+    "product",
+    [
+        {"sn8": "610VR700", "productModel": "S9", "protoVersion": 1},
+        # Same plugin as the tested VR7700, but control is not confirmed on a real robot
+        {"sn8": "620VR520", "productModel": "VR7700", "protoVersion": 0},
+    ],
+)
+async def test_other_model_is_read_only(hass: HomeAssistant, mock_api, product) -> None:
     from homeassistant.helpers import issue_registry as ir
 
     from .conftest import DEVICE
 
-    mock_api["devices"].return_value = [
-        {**DEVICE, "product": {"sn8": "610VR700", "productModel": "S9", "protoVersion": 1}}
-    ]
+    mock_api["devices"].return_value = [{**DEVICE, "product": product}]
     entry = _entry(hass)
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
@@ -208,7 +237,7 @@ async def test_other_model_is_read_only(hass: HomeAssistant, mock_api) -> None:
     # No query frames are sent to a robot whose command set is unknown
     mock_api["send"].assert_not_awaited()
     issue = ir.async_get(hass).async_get_issue(DOMAIN, "unsupported_model_111")
-    assert issue.translation_placeholders["sn8"] == "610VR700"
+    assert issue.translation_placeholders["sn8"] == product["sn8"]
 
 
 async def test_no_water_level_without_mop(hass: HomeAssistant, mock_api) -> None:
@@ -267,15 +296,11 @@ async def test_move_and_clean_modes(hass: HomeAssistant, mock_api) -> None:
     sent = [c.args[1] for c in mock_api["send"].await_args_list]
     assert sent.index(protocol.manual(3)) < sent.index(protocol.manual(0))
 
-    await hass.services.async_call(
-        "vacuum", "send_command", {"entity_id": "vacuum.kitchen", "command": "clean_edge"}, blocking=True
-    )
-    mock_api["send"].assert_any_await("111", protocol.start(3, 2, mode=3), wait_timeout=15)
-
-    with pytest.raises(ServiceValidationError):
-        await hass.services.async_call(
-            "vacuum", "send_command", {"entity_id": "vacuum.kitchen", "command": "dance"}, blocking=True
-        )
+    for command in ("clean_edge", "clean_spot", "dance"):
+        with pytest.raises(ServiceValidationError):
+            await hass.services.async_call(
+                "vacuum", "send_command", {"entity_id": "vacuum.kitchen", "command": command}, blocking=True
+            )
 
 
 async def test_suction_select(hass: HomeAssistant, mock_api) -> None:
@@ -287,8 +312,8 @@ async def test_suction_select(hass: HomeAssistant, mock_api) -> None:
     await hass.services.async_call(
         "select", "select_option", {"entity_id": "select.kitchen_suction_power", "option": "max"}, blocking=True
     )
-    # Suction and water go together; water keeps its current level (normal)
-    mock_api["send"].assert_any_await("111", protocol.set_suction(5, 2), wait_timeout=15)
+    # Suction and water go together; water keeps the level the robot reports (high)
+    mock_api["send"].assert_any_await("111", protocol.set_suction(5, 3), wait_timeout=15)
 
 
 async def test_child_lock_history_and_firmware(hass: HomeAssistant, mock_api) -> None:

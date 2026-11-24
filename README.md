@@ -55,8 +55,6 @@ Custom Home Assistant integration for the **Samsung VR7700 (POWERbot-S)** robot 
 | Command | Params | What it does |
 |---------|--------|--------------|
 | `move` | `direction`: forward / back / left / right, `duration`: seconds (default 1, max 5) | Drives the robot by hand for a moment, then stops it |
-| `clean_edge` | — | Cleans along the walls (experimental) |
-| `clean_spot` | — | Cleans the spot around the robot (experimental) |
 | `clean_rooms` | `rooms`: list of room names or ids (see the vacuum's `rooms` attribute), `times`: 1–3 | Cleans only those rooms |
 
 ```yaml
@@ -75,7 +73,7 @@ data:
 | Model | Model code | Support |
 |-------|------------|---------|
 | POWERbot-S VR7700 (Europe) | 610VR510 | Full, tested |
-| POWERbot-S VR7700 (North America) | 620VR520 | Full (same app plugin), not tested yet |
+| POWERbot-S VR7700 (North America) | 620VR520 | State and battery only until control is confirmed on a real robot |
 | Any other robot in the POWERbot-S app | — | State and battery only; Home Assistant shows a repair notice with the model details |
 
 The water level control appears only when the robot reports a mop attached.
@@ -253,8 +251,6 @@ logger:
 | Команда | Параметри | Що робить |
 |---------|-----------|-----------|
 | `move` | `direction`: forward / back / left / right, `duration`: секунди (типово 1, максимум 5) | Ненадовго рушає робота вручну, потім зупиняє |
-| `clean_edge` | — | Прибирання вздовж стін (експериментально) |
-| `clean_spot` | — | Прибирання навколо робота (експериментально) |
 | `clean_rooms` | `rooms`: список назв або номерів кімнат (див. атрибут `rooms` пилососа), `times`: 1–3 | Прибирає лише ці кімнати |
 
 ### Підтримувані моделі
@@ -262,7 +258,7 @@ logger:
 | Модель | Код моделі | Підтримка |
 |--------|------------|-----------|
 | POWERbot-S VR7700 (Європа) | 610VR510 | Повна, перевірена |
-| POWERbot-S VR7700 (Північна Америка) | 620VR520 | Повна (той самий плагін застосунку), ще не перевірена |
+| POWERbot-S VR7700 (Північна Америка) | 620VR520 | Лише стан і заряд, доки керування не перевірять на справжньому роботі |
 | Будь-який інший робот у застосунку POWERbot-S | — | Лише стан і заряд; Home Assistant показує сповіщення з даними моделі |
 
 Керування рівнем води з'являється, лише коли робот повідомляє, що мопа встановлена.

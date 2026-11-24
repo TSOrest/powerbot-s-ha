@@ -42,7 +42,7 @@ class PowerBotDndTime(PowerBotEntity, TimeEntity):
         self._attr_translation_key = key
 
     @property
-    def native_value(self) -> time:
+    def native_value(self) -> time | None:
         return getattr(self.coordinator, self._key)
 
     async def async_set_value(self, value: time) -> None:

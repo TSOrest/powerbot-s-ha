@@ -88,7 +88,7 @@ async def test_map_image_and_rooms(hass: HomeAssistant, hass_client, mock_api) -
         blocking=True,
     )
     mock_api["send"].assert_any_await(
-        "111", protocol.clean_rooms(3, 2, [(2, 1), (1, 1)]), wait_timeout=15
+        "111", protocol.clean_rooms(3, 3, [(2, 1), (1, 1)]), wait_timeout=15
     )
     with pytest.raises(ServiceValidationError, match="Unknown room"):
         await hass.services.async_call(

@@ -34,8 +34,6 @@ _DIRECTIONS = {"forward": 1, "back": 2, "left": 3, "right": 4}
 _MANUAL_STOP = 0
 _MOVE_SECONDS = 1.0
 _MOVE_MAX_SECONDS = 5.0
-# vacuum.send_command start modes besides the normal whole-house clean
-_CLEAN_MODES = {"clean_edge": 3, "clean_spot": 4}
 
 _ACTIVITY: dict[str, VacuumActivity] = {
     STATE_CLEANING: VacuumActivity.CLEANING,
@@ -92,7 +90,7 @@ class PowerBotVacuum(PowerBotEntity, StateVacuumEntity):
         if self.activity == VacuumActivity.PAUSED:
             await self.coordinator.async_send(protocol.resume())
         else:
-            await self.coordinator.async_send(protocol.start(*self.coordinator.levels()))
+            await self.coordinator.async_send(protocol.start(*await self.coordinator.async_levels()))
 
     async def async_pause(self) -> None:
         await self.coordinator.async_send(protocol.pause())
@@ -110,7 +108,7 @@ class PowerBotVacuum(PowerBotEntity, StateVacuumEntity):
         if fan_speed not in FAN_SPEEDS:
             raise ServiceValidationError(f"Unknown fan speed: {fan_speed}")
         await self.coordinator.async_send(
-            protocol.set_suction(*self.coordinator.levels(fan=fan_speed))
+            protocol.set_suction(*await self.coordinator.async_levels(fan=fan_speed))
         )
 
     @property
@@ -143,7 +141,7 @@ class PowerBotVacuum(PowerBotEntity, StateVacuumEntity):
         except (TypeError, ValueError) as err:
             raise ServiceValidationError("times must be 1, 2 or 3") from err
         await self.coordinator.async_send(
-            protocol.clean_rooms(*self.coordinator.levels(), [(i, times) for i in ids])
+            protocol.clean_rooms(*await self.coordinator.async_levels(), [(i, times) for i in ids])
         )
 
     async def async_send_command(
@@ -152,19 +150,14 @@ class PowerBotVacuum(PowerBotEntity, StateVacuumEntity):
         params: dict[str, Any] | list[Any] | None = None,
         **kwargs: Any,
     ) -> None:
-        """Extra commands: move (a short nudge by hand), clean_edge, clean_spot, clean_rooms."""
+        """Extra commands: move (a short nudge by hand) and clean_rooms."""
         params = params if isinstance(params, dict) else {}
         if command == "clean_rooms":
             await self._async_clean_rooms(params)
             return
-        if command in _CLEAN_MODES:
-            await self.coordinator.async_send(
-                protocol.start(*self.coordinator.levels(), mode=_CLEAN_MODES[command])
-            )
-            return
         if command != "move":
             raise ServiceValidationError(
-                f"Unknown command: {command}. Use move, clean_edge, clean_spot or clean_rooms."
+                f"Unknown command: {command}. Use move or clean_rooms."
             )
         direction = params.get("direction", "forward")
         if direction not in _DIRECTIONS:

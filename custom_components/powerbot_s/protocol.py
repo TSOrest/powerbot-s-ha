@@ -52,9 +52,9 @@ def build_frame(body: bytes, msg_type: int = _MSG_CONTROL) -> str:
     return frame.hex().upper()
 
 
-def start(fan: int, water: int, mode: int = _WORK_MODE_AUTO) -> str:
-    """Start a clean in the given work mode (whole house by default)."""
-    return build_frame(bytes([_CONTROL, _START, 0, 2, 0, mode, fan, 0, water, 0, 0]))
+def start(fan: int, water: int) -> str:
+    """Start a whole-house clean."""
+    return build_frame(bytes([_CONTROL, _START, 0, 2, 0, _WORK_MODE_AUTO, fan, 0, water, 0, 0]))
 
 
 _WORK_MODE_ROOMS = 0x0A
