@@ -13,6 +13,10 @@ CONF_REGION = "region"
 CONF_DEVICE_ID = "device_id"
 CONF_ACCESS_TOKEN = "access_token"
 CONF_REFRESH_TOKEN = "refresh_token"
+# Model code and protocol version read from the device list (or chosen by hand),
+# kept so a failed device list later doesn't leave the model unknown
+CONF_SN8 = "sn8"
+CONF_PROTO_VERSION = "proto_version"
 
 SCAN_INTERVAL = timedelta(seconds=30)
 
@@ -35,7 +39,6 @@ PARTS_HOSTS = {
     "global": "https://api-euca.midea.com",
     "cn": "https://mx-cnca.midea.com",
 }
-DEFAULT_SN8 = "610VR510"
 
 # Models whose control plugin (Midea M7, project m7MSLifeSamsung) the command
 # frames come from and that were tested on a real robot: VR7700 for Europe,
@@ -43,6 +46,11 @@ DEFAULT_SN8 = "610VR510"
 # but stays read-only until someone confirms control works on it.
 SUPPORTED_SN8 = ("610VR510",)
 SUPPORTED_PROTO_VERSIONS = (0,)
+# Models offered when the robot is added by its device id (the device list was
+# empty, so the model can't be read): choice -> (sn8, protocol version).
+# Anything else is shown read-only.
+MANUAL_MODELS = {"vr7700_eu": ("610VR510", 0)}
+MANUAL_MODEL_OTHER = "other"
 
 # Work modes reported in the work-state reply (byte 16)
 WORK_MODES = {

@@ -75,6 +75,7 @@ data:
 | POWERbot-S VR7700 (Europe) | 610VR510 | Full, tested |
 | POWERbot-S VR7700 (North America) | 620VR520 | State and battery only until control is confirmed on a real robot |
 | Any other robot in the POWERbot-S app | — | State and battery only; Home Assistant shows a repair notice with the model details |
+| A robot whose model can't be read | — | State and battery only. If the account's robot list is empty, setup asks for the Device ID and the model |
 
 The water level control appears only when the robot reports a mop attached.
 
@@ -260,6 +261,7 @@ logger:
 | POWERbot-S VR7700 (Європа) | 610VR510 | Повна, перевірена |
 | POWERbot-S VR7700 (Північна Америка) | 620VR520 | Лише стан і заряд, доки керування не перевірять на справжньому роботі |
 | Будь-який інший робот у застосунку POWERbot-S | — | Лише стан і заряд; Home Assistant показує сповіщення з даними моделі |
+| Робот, модель якого не вдалося прочитати | — | Лише стан і заряд. Якщо список роботів в акаунті порожній, налаштування запитує Device ID і модель |
 
 Керування рівнем води з'являється, лише коли робот повідомляє, що мопа встановлена.
 

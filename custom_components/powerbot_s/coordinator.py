@@ -19,11 +19,13 @@ from .api import (
     PowerBotAuthError,
     PowerBotDeviceTimeoutError,
     device_id_of,
+    model_of,
 )
 from .const import (
     CONF_DEVICE_ID,
+    CONF_PROTO_VERSION,
+    CONF_SN8,
     CONSUMABLES,
-    DEFAULT_SN8,
     SUPPORTED_PROTO_VERSIONS,
     SUPPORTED_SN8,
     DOMAIN,
@@ -82,10 +84,11 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.parts: dict[str, int] = {}
         self._owner_id: str | None = None
         self._polls = 0
-        # Model details from the device list (None if it could not be read)
-        self.sn8: str | None = None
+        # Model details from the device list, or as saved when it was last read
+        # (None if never known)
+        self.sn8: str | None = entry.data.get(CONF_SN8)
         self.model: str | None = None
-        self.proto_version: int | None = None
+        self.proto_version: int | None = entry.data.get(CONF_PROTO_VERSION)
         self.plugin: str | None = None
         # Read from the robot: False when it reports no mop attached
         self.has_mop: bool | None = None
@@ -113,23 +116,31 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     def supported(self) -> bool:
         """True if the robot takes the commands this integration knows.
 
-        Other models are shown read-only until their control plugin is analysed.
-        If the model could not be read, assume the VR7700 as earlier versions did.
+        Other models, and a robot whose model is not known, are shown read-only
+        until their control is confirmed.
         """
-        if self.sn8 is None:
-            return True
         return self.sn8 in SUPPORTED_SN8 and self.proto_version in SUPPORTED_PROTO_VERSIONS
 
     async def _async_setup(self) -> None:
         """Read what does not change while running: model, owner and voice packs."""
         try:
-            for device in await self.client.async_get_devices():
-                if device_id_of(device) == self.device_id:
-                    self._read_device(device)
+            devices = await self.client.async_get_devices()
+        except PowerBotAuthError as err:
+            raise ConfigEntryAuthFailed(str(err)) from err
+        except PowerBotApiError as err:
+            if self.sn8 is None:
+                # Never guess the model: retry setup until it can be read
+                raise UpdateFailed(f"Could not read the robot's model: {err}") from err
+            _LOGGER.debug("Could not read the device list, using the saved model: %s", err)
+            devices = []
+        for device in devices:
+            if device_id_of(device) == self.device_id:
+                self._read_device(device)
+        try:
             if not self.supported:
                 return
             await self._async_read_firmware()
-            voices = await self.client.async_get_voices(self.sn8 or DEFAULT_SN8)
+            voices = await self.client.async_get_voices(self.sn8)
         except PowerBotAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
         except PowerBotApiError as err:
@@ -144,10 +155,10 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._owner_id = device.get("ownerId") or device.get("userId")
         product = device.get("product") if isinstance(device.get("product"), dict) else {}
         panel = device.get("panel") or product.get("plugin")
-        self.sn8 = product.get("sn8") or device.get("sn8") or DEFAULT_SN8
         self.model = product.get("productModel") or device.get("productModel")
-        proto = product.get("protoVersion", device.get("protoVersion", 0))
-        self.proto_version = int(proto) if str(proto).isdigit() else None
+        if model := model_of(device):
+            self.sn8, self.proto_version = model
+            self._save_model()
         if isinstance(panel, dict) and panel.get("name"):
             self.plugin = f"{panel['name']} {panel.get('versionName') or ''}".strip()
         if not self.supported:
@@ -159,6 +170,13 @@ class PowerBotDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 self.proto_version,
                 self.plugin,
             )
+
+    def _save_model(self) -> None:
+        """Keep the model in the config entry for when the device list fails."""
+        entry = self.config_entry
+        model = {CONF_SN8: self.sn8, CONF_PROTO_VERSION: self.proto_version}
+        if any(entry.data.get(key) != value for key, value in model.items()):
+            self.hass.config_entries.async_update_entry(entry, data={**entry.data, **model})
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:

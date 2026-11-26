@@ -64,6 +64,19 @@ def device_id_of(device: dict[str, Any]) -> str:
     return str(device.get("deviceId") or device.get("id") or "")
 
 
+def model_of(device: dict[str, Any]) -> tuple[str, int | None] | None:
+    """Return the model code (sn8) and protocol version of a device list item.
+
+    None if the item carries no model code.
+    """
+    product = device.get("product") if isinstance(device.get("product"), dict) else {}
+    sn8 = product.get("sn8") or device.get("sn8")
+    if not sn8:
+        return None
+    proto = product.get("protoVersion", device.get("protoVersion", 0))
+    return str(sn8), int(proto) if str(proto).isdigit() else None
+
+
 def device_name_of(device: dict[str, Any]) -> str:
     """Return a human readable name from a device list item."""
     return device.get("nickname") or device.get("name") or "POWERbot-S"

@@ -18,9 +18,10 @@
       },
       "manual": {
         "title": "ID du robot",
-        "description": "Aucun robot n'a été renvoyé pour ce compte. Saisissez le Device ID affiché dans l'application POWERbot-S (Paramètres → Infos appareil).",
+        "description": "Aucun robot n'a été renvoyé pour ce compte. Saisissez le Device ID affiché dans l'application POWERbot-S (Paramètres → Infos appareil). Choisissez le modèle du robot : seul le POWERbot-S VR7700 pour l'Europe peut être piloté, tout autre modèle est en lecture seule.",
         "data": {
-          "device_id": "Device ID"
+          "device_id": "Device ID",
+          "model": "Modèle"
         }
       },
       "reauth_confirm": {
@@ -267,6 +268,18 @@
     "unsupported_model": {
       "title": "{name} est en lecture seule",
       "description": "{name} est un {model} (code modèle {sn8}, plugin de l'app {plugin}). Cette intégration ne sait encore piloter que le POWERbot-S VR7700 : Home Assistant affiche l'état de ce robot mais ne peut pas lui envoyer de commandes. Ouvrez une issue sur GitHub avec les informations ci-dessus pour que sa prise en charge soit ajoutée."
+    },
+    "unknown_model": {
+      "title": "{name} est en lecture seule",
+      "description": "Home Assistant n'a pas pu déterminer le modèle de {name} : il affiche l'état du robot mais ne lui envoie pas de commandes. S'il s'agit d'un POWERbot-S VR7700 pour l'Europe, supprimez l'intégration puis ajoutez-la à nouveau en choisissant ce modèle à l'étape de l'ID du robot."
+    }
+  },
+  "selector": {
+    "model": {
+      "options": {
+        "vr7700_eu": "POWERbot-S VR7700 (Europe, 610VR510)",
+        "other": "Autre modèle ou je ne sais pas (état seulement)"
+      }
     }
   }
 }

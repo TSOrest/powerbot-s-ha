@@ -25,16 +25,24 @@ from .api import (
     PowerBotAuthError,
     device_id_of,
     device_name_of,
+    model_of,
 )
 from .const import (
     CONF_ACCESS_TOKEN,
     CONF_DEVICE_ID,
+    CONF_PROTO_VERSION,
     CONF_REFRESH_TOKEN,
     CONF_REGION,
+    CONF_SN8,
     DOMAIN,
+    MANUAL_MODEL_OTHER,
+    MANUAL_MODELS,
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+# Model choice in the manual step, see MANUAL_MODELS
+CONF_MODEL = "model"
 
 CREDENTIALS_SCHEMA = vol.Schema(
     {
@@ -57,6 +65,7 @@ class PowerBotConfigFlow(ConfigFlow, domain=DOMAIN):
         self._credentials: dict[str, Any] = {}
         self._tokens: dict[str, str | None] = {}
         self._devices: dict[str, str] = {}  # device id -> name
+        self._models: dict[str, dict[str, Any]] = {}  # device id -> model data
         self._client: PowerBotApiClient | None = None
 
     async def _async_login(self, email: str, password: str) -> PowerBotApiClient:
@@ -93,6 +102,14 @@ class PowerBotConfigFlow(ConfigFlow, domain=DOMAIN):
                     for d in devices
                     if device_id_of(d) and device_id_of(d) not in configured
                 }
+                self._models = {}
+                for device in devices:
+                    if model := model_of(device):
+                        sn8, proto_version = model
+                        self._models[device_id_of(device)] = {
+                            CONF_SN8: sn8,
+                            CONF_PROTO_VERSION: proto_version,
+                        }
                 if not devices:
                     # Device list came back empty: fall back to entering the id by hand.
                     self._client = client
@@ -130,7 +147,7 @@ class PowerBotConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_manual(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Ask for the device id when the account's device list is empty."""
+        """Ask for the device id and model when the account's device list is empty."""
         errors: dict[str, str] = {}
         if user_input is not None and self._client is not None:
             device_id = user_input[CONF_DEVICE_ID].strip()
@@ -140,12 +157,30 @@ class PowerBotConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors["base"] = "cannot_connect"
             else:
                 if state:
+                    if model := MANUAL_MODELS.get(user_input[CONF_MODEL]):
+                        self._models[device_id] = {
+                            CONF_SN8: model[0],
+                            CONF_PROTO_VERSION: model[1],
+                        }
                     return await self._async_create(device_id)
                 errors["base"] = "device_not_found"
 
         return self.async_show_form(
             step_id="manual",
-            data_schema=vol.Schema({vol.Required(CONF_DEVICE_ID): str}),
+            data_schema=self.add_suggested_values_to_schema(
+                vol.Schema(
+                    {
+                        vol.Required(CONF_DEVICE_ID): str,
+                        vol.Required(CONF_MODEL): SelectSelector(
+                            SelectSelectorConfig(
+                                options=[*MANUAL_MODELS, MANUAL_MODEL_OTHER],
+                                translation_key="model",
+                            )
+                        ),
+                    }
+                ),
+                user_input,
+            ),
             errors=errors,
         )
 
@@ -161,6 +196,7 @@ class PowerBotConfigFlow(ConfigFlow, domain=DOMAIN):
                 CONF_REGION: self._tokens.get("region"),
                 CONF_ACCESS_TOKEN: self._tokens.get("access_token"),
                 CONF_REFRESH_TOKEN: self._tokens.get("refresh_token"),
+                **self._models.get(device_id, {}),
             },
         )
 
