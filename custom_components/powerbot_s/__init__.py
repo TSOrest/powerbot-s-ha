@@ -67,7 +67,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: PowerBotConfigEntry) -> 
             issue_id,
             is_fixable=False,
             severity=ir.IssueSeverity.WARNING,
-            translation_key="unsupported_model",
+            translation_key="unsupported_model" if coordinator.sn8 else "unknown_model",
             translation_placeholders={
                 "name": entry.title,
                 "model": coordinator.model or "?",

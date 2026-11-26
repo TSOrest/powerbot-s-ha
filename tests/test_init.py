@@ -6,7 +6,7 @@ from homeassistant.exceptions import HomeAssistantError
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.powerbot_s.api import PowerBotAuthError
-from custom_components.powerbot_s.const import CONF_DEVICE_ID, DOMAIN
+from custom_components.powerbot_s.const import CONF_DEVICE_ID, CONF_PROTO_VERSION, CONF_SN8, DOMAIN
 from custom_components.powerbot_s import protocol
 
 
@@ -238,6 +238,71 @@ async def test_other_model_is_read_only(hass: HomeAssistant, mock_api, product) 
     mock_api["send"].assert_not_awaited()
     issue = ir.async_get(hass).async_get_issue(DOMAIN, "unsupported_model_111")
     assert issue.translation_placeholders["sn8"] == product["sn8"]
+
+
+def _assert_read_only(hass: HomeAssistant, mock_api) -> None:
+    assert hass.states.get("vacuum.kitchen").attributes["supported_features"] == 4096  # state only
+    assert hass.states.get("number.kitchen_volume") is None
+    mock_api["send"].assert_not_awaited()
+
+
+async def test_unknown_model_is_read_only(hass: HomeAssistant, mock_api) -> None:
+    from homeassistant.helpers import issue_registry as ir
+
+    from .conftest import DEVICE
+
+    # The device list item has no model code: don't assume the VR7700
+    mock_api["devices"].return_value = [{**DEVICE, "product": {"productModel": "VR7700"}}]
+    entry = _entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    _assert_read_only(hass, mock_api)
+    assert ir.async_get(hass).async_get_issue(DOMAIN, "unsupported_model_111").translation_key == "unknown_model"
+
+
+async def test_robot_added_by_id_without_model_is_read_only(hass: HomeAssistant, mock_api) -> None:
+    mock_api["devices"].return_value = []
+    entry = _entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    _assert_read_only(hass, mock_api)
+
+
+async def test_robot_added_by_id_with_model_has_control(hass: HomeAssistant, mock_api) -> None:
+    mock_api["devices"].return_value = []
+    entry = _entry(hass)
+    hass.config_entries.async_update_entry(entry, data={**entry.data, CONF_SN8: "610VR510", CONF_PROTO_VERSION: 0})
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert hass.states.get("number.kitchen_volume") is not None
+
+
+async def test_device_list_failure_retries_setup_when_model_unknown(hass: HomeAssistant, mock_api) -> None:
+    from custom_components.powerbot_s.api import PowerBotApiError
+
+    mock_api["devices"].side_effect = PowerBotApiError("down")
+    entry = _entry(hass)
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert entry.state is ConfigEntryState.SETUP_RETRY
+    mock_api["send"].assert_not_awaited()
+
+
+async def test_device_list_failure_uses_saved_model(hass: HomeAssistant, mock_api) -> None:
+    from custom_components.powerbot_s.api import PowerBotApiError
+
+    # First start reads the model from the device list and saves it
+    entry = _entry(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert entry.data[CONF_SN8] == "610VR510"
+    assert await hass.config_entries.async_unload(entry.entry_id)
+
+    mock_api["devices"].side_effect = PowerBotApiError("down")
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert entry.state is ConfigEntryState.LOADED
+    assert hass.states.get("number.kitchen_volume") is not None
 
 
 async def test_no_water_level_without_mop(hass: HomeAssistant, mock_api) -> None:

@@ -5,7 +5,7 @@ from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.powerbot_s.api import PowerBotAuthError
-from custom_components.powerbot_s.const import CONF_DEVICE_ID, DOMAIN
+from custom_components.powerbot_s.const import CONF_DEVICE_ID, CONF_PROTO_VERSION, CONF_SN8, DOMAIN
 
 CREDS = {"email": "a@b.c", "password": "pw"}
 
@@ -23,6 +23,9 @@ async def test_single_robot_added_without_extra_steps(hass: HomeAssistant, mock_
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["title"] == "Kitchen"
     assert result["data"][CONF_DEVICE_ID] == "111"
+    # The model is kept for when the device list can't be read later
+    assert result["data"][CONF_SN8] == "610VR510"
+    assert result["data"][CONF_PROTO_VERSION] == 0
     assert result["result"].unique_id == "111"
 
 
@@ -53,9 +56,24 @@ async def test_empty_device_list_falls_back_to_manual(hass: HomeAssistant, mock_
     result = await _start(hass)
     result = await hass.config_entries.flow.async_configure(result["flow_id"], CREDS)
     assert result["step_id"] == "manual"
-    result = await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_DEVICE_ID: " 111 "})
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_DEVICE_ID: " 111 ", "model": "vr7700_eu"}
+    )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["data"][CONF_DEVICE_ID] == "111"
+    assert result["data"][CONF_SN8] == "610VR510"
+    assert result["data"][CONF_PROTO_VERSION] == 0
+
+
+async def test_manual_other_model_saves_no_model(hass: HomeAssistant, mock_api) -> None:
+    mock_api["devices"].return_value = []
+    result = await _start(hass)
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], CREDS)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_DEVICE_ID: "111", "model": "other"}
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert CONF_SN8 not in result["data"]
 
 
 async def test_already_configured(hass: HomeAssistant, mock_api) -> None:
